@@ -5,7 +5,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <BaseOutputPath>F:\A_Code\Web_api\LY_WebApi\bin</BaseOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="类库项目\**" />
+    <Content Remove="类库项目\**" />
+    <EmbeddedResource Remove="类库项目\**" />
+    <None Remove="类库项目\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="3.2.0" />
@@ -15,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LY_WebApi_SwaggerSetting\LY_WebApi_SwaggerSetting.csproj" />
-    <ProjectReference Include="..\LY_WebAPI_Test\LY_WebAPI_Test.csproj" />
+    <ProjectReference Include="类库项目\LY_WebApi_SwaggerSetting\LY_WebApi_SwaggerSetting.csproj" />
+    <ProjectReference Include="类库项目\LY_WebAPI_Test\LY_WebAPI_Test.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,10 +37,6 @@
     <None Update="LogSetting\NlogConf.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Utility\" />
   </ItemGroup>
 
 </Project>
