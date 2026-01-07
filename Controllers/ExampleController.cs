@@ -1,4 +1,5 @@
-﻿using LY_WebApi.Models;
+﻿using LY_WebApi.Filter;
+using LY_WebApi.Models;
 using LY_WebApi.Models.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,20 +28,11 @@ namespace LY_WebApi.Controllers
         /// <param name="id"> 路由中的请求数据 </param>
         /// <returns> IActionResult 是 ASP.NET Core 中统一的 Action 返回接口，封装了所有 HTTP 响应细节 </returns>
         [HttpGet("dataFromRouteAndTestResult/{id}")]
+        [Shirts_ValidateShirtIdFilter] //使用自定义过滤器 验证id参数
         public IActionResult AddDataFromRouteAndTestResult([FromRoute] int id)
         {
-            //返回400
-            if (id <= 0)
-                return BadRequest();
-
-            var shirt = Shirt_Repository.GetShirtsById(id);
-
-            //返回404
-            if (shirt == null)
-                return NotFound();
-
-            //返回200
-            return Ok(shirt);
+            //返回成功200
+            return Ok(Shirt_Repository.GetShirtsById(id));
         }
 
         /// <summary>
@@ -113,8 +105,14 @@ namespace LY_WebApi.Controllers
                 return BadRequest("参数错误，衬衫信息不能为空");
             }
 
-            // 直接调用ToString()，自动拼接所有属性
-            return Ok($"增加{shirts}的衬衫");
+            if (Shirt_Repository.AddShirt(shirts, out var result))
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+
+
         }
 
 

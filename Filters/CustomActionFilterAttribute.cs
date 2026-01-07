@@ -27,7 +27,7 @@ namespace LY_WebApi.Filters
         public void OnActionExecuted(ActionExecutedContext context)
         {
             Console.WriteLine("CustomActionFilterAttribute.OnActionExecuted");
-        } 
+        }
     }
 
     /// <summary>

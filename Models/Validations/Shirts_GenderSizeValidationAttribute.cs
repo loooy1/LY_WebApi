@@ -32,7 +32,7 @@ public class Shirts_GenderSizeValidationAttribute : ValidationAttribute
             {
                 return new ValidationResult("错误：女士衬衫尺寸必须大于等于6");
             }
-            else
+            else if (shirts.Gender != "男" && shirts.Gender != "女")
             {
                 return new ValidationResult("错误：性别 必须是‘男’或者‘女’");
             }
