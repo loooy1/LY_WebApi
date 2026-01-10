@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace LY_WebApi.Filter
+namespace LY_WebApi.Filter.ActionValidations
 {
+    /// <summary>
+    /// 方法过滤器 仅用于修饰控制器方法
+    /// </summary>
     public class Shirts_ValidateShirtIdFilterAttribute : ActionFilterAttribute
     {
-
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             base.OnActionExecuting(context);

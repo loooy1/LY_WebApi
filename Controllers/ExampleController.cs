@@ -1,4 +1,5 @@
-﻿using LY_WebApi.Filter;
+﻿using LY_WebApi.Filter.ActionValidations;
+using LY_WebApi.Filter.ExceptionFilters;
 using LY_WebApi.Models;
 using LY_WebApi.Models.Repository;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ namespace LY_WebApi.Controllers
         /// <param name="id"> 路由中的请求数据 </param>
         /// <returns> IActionResult 是 ASP.NET Core 中统一的 Action 返回接口，封装了所有 HTTP 响应细节 </returns>
         [HttpGet("dataFromRouteAndTestResult/{id}")]
-        [Shirts_ValidateShirtIdFilter] //使用自定义过滤器 验证id参数
+        [Shirts_ValidateShirtIdFilter] //控制器方法过滤器
         public IActionResult AddDataFromRouteAndTestResult([FromRoute] int id)
         {
             //返回成功200
@@ -71,28 +72,6 @@ namespace LY_WebApi.Controllers
         }
 
         /// <summary>
-        /// 删除数据
-        /// </summary>
-        /// <returns></returns>
-        [HttpDelete("deletedata")]
-        public IActionResult DeleteData()
-        {
-            return Ok("删除所有数据");
-        }
-
-        /// <summary>
-        /// 更新数据
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        [HttpPut("update/{data}")]
-        public IActionResult UpdateData(int data)
-        {
-            return Ok($"更新数据：{data}");
-        }
-
-
-        /// <summary>
         /// 一般post方法 从http的body请求体中获取数据
         /// </summary>
         /// <param name="shirts"></param>
@@ -100,10 +79,6 @@ namespace LY_WebApi.Controllers
         [HttpPost("dataFromBody")]
         public IActionResult AddShirts([FromBody] Shirts shirts)
         {
-            if (shirts == null)
-            {
-                return BadRequest("参数错误，衬衫信息不能为空");
-            }
 
             if (Shirt_Repository.AddShirt(shirts, out var result))
             {
@@ -111,8 +86,48 @@ namespace LY_WebApi.Controllers
             }
 
             return BadRequest(result);
+        }
+
+        /// <summary>
+        /// 删除数据
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("delete/{id}")]
+        [Shirts_ValidateShirtIdFilter]
+        public IActionResult DeleteData(int id)
+        {
+            if (Shirt_Repository.DeleteShirtsById(id, out var result))
+
+                return Ok(result);
+
+            return NotFound(result);
+        }
+
+        /// <summary>
+        /// 更新数据
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        [HttpPut("update")]
+        [Shirts_UpdateExceptionFilter]
+        public IActionResult UpdateData([FromBody] Shirts data)
+        {
+
+            if (Shirt_Repository.UpdateShirt(data, out var result))
+                return Ok(result);
 
 
+            return NotFound(result);
+        }
+        /// <summary>
+        /// get方法 从http的body请求体中获取数据
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("dataFromMemory")]
+        public IActionResult GetShirts()
+        {
+
+            return Ok(Shirt_Repository.GetAllShirts());
         }
 
 

@@ -3,12 +3,20 @@ using System.ComponentModel.DataAnnotations;
 using LY_WebApi.Models;
 
 
-// 自定义校验特性类：命名建议简化为 ShirtsGenderSizeValidationAttribute（更语义化）
+/// <summary>
+/// 自定义校验特性类  仅用于修饰属性
+/// </summary>
 public class Shirts_GenderSizeValidationAttribute : ValidationAttribute
 {
+
+    /// <summary>
     // 核心重写方法：框架会调用这个方法执行校验逻辑
     // 参数1：value → 特性贴在哪个属性上，这个值就是该属性的当前值（⚠️ 注意这个参数的坑）
     // 参数2：validationContext → 校验上下文，包含整个模型实例、属性信息等核心数据
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="validationContext"></param>
+    /// <returns></returns>
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         // 步骤1：从校验上下文获取整个 Shirts 对象实例

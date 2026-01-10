@@ -1,4 +1,6 @@
-﻿namespace LY_WebApi.Models.Repository
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace LY_WebApi.Models.Repository
 {
     /// <summary>
     /// shirts 内存仓库
@@ -37,6 +39,103 @@
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="shirt"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool AddShirt(Shirts shirt, out ValidationProblemDetails result)
+        {
+            var maxId = shirts.Max(x => x.ShirtsId);
+            shirt.ShirtsId = shirts.Any(x => x.ShirtsId == shirt.ShirtsId) ? maxId + 1 : shirt.ShirtsId;
+            var problemDetails = new ValidationProblemDetails();
+
+            //判断shirt的Guid是否存在于仓库，不存在则增加 存在则拒绝增加
+            if (shirts.Any(x => x.GuidId == shirt.GuidId))
+            {
+                problemDetails.Status = StatusCodes.Status400BadRequest;
+                problemDetails.Title = "Validation Failed";
+                problemDetails.Detail = $"已存在Guid为{shirt.GuidId}的衬衫，无法添加重复Guid的衬衫";
+
+                result = problemDetails;
+                return false;
+            }
+
+
+            shirts.Add(shirt);
+
+            problemDetails.Status = StatusCodes.Status200OK;
+            problemDetails.Title = "Validation Succeed";
+            problemDetails.Detail = $"成功添加{shirt.ToString()}";
+
+            result = problemDetails;
+            return true;
+        }
+
+
+        public static bool UpdateShirt(Shirts shirt, out ValidationProblemDetails result)
+        {
+            var problemDetails = new ValidationProblemDetails();
+            var shirtToUpdate = shirts.FirstOrDefault(x => x.ShirtsId == shirt.ShirtsId && x.GuidId == shirt.GuidId);
+
+            //存在要更新的衬衫
+            if (shirtToUpdate != null)
+            {
+
+                shirtToUpdate.ShirtsId = shirt.ShirtsId;
+                shirtToUpdate.Brand = shirt.Brand;
+                shirtToUpdate.Color = shirt.Color;
+                shirtToUpdate.Size = shirt.Size;
+                shirtToUpdate.Gender = shirt.Gender;
+
+                problemDetails.Status = StatusCodes.Status200OK;
+                problemDetails.Title = "Success";
+                problemDetails.Detail = $"成功更新{shirt.ToString()}";
+
+                result = problemDetails;
+                return true;
+
+            }
+
+            problemDetails.Status = StatusCodes.Status400BadRequest;
+            problemDetails.Title = "Failed";
+            problemDetails.Detail = $"更新失败，ShirtsId或GuidId未找到对应的衬衫";
+
+            result = problemDetails;
+            return false;
+        }
+
+        /// <summary>
+        /// 删除指定id的shirt
+        /// </summary>
+        /// <param name="shirtId"></param>
+        /// <returns></returns>
+        public static bool DeleteShirtsById(int shirtId, out ValidationProblemDetails result)
+        {
+            var shirtToDelete = shirts.FirstOrDefault(x => x.ShirtsId == shirtId);
+            var problemDetails = new ValidationProblemDetails();
+            if (shirtToDelete != null)
+            {
+                shirts.Remove(shirtToDelete);
+
+                problemDetails.Status = StatusCodes.Status200OK;
+                problemDetails.Title = "Success";
+                problemDetails.Detail = $"删除成功:{shirtToDelete.ToString()}";
+
+                result = problemDetails;
+                return true;
+            }
+
+            problemDetails.Status = StatusCodes.Status404NotFound;
+            problemDetails.Title = "Failed";
+            problemDetails.Detail = $"未找到{shirtId}对应的衬衫";
+
+            result = problemDetails;
+            return false;
+        }
+
+
+        /// <summary>
         /// 返回指定id的shirt
         /// </summary>
         /// <param name="id"></param>
@@ -46,28 +145,6 @@
             return shirts.FirstOrDefault(x => x.ShirtsId == id);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="shirt"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public static bool AddShirt(Shirts shirt, out string result)
-        {
-            var maxId = shirts.Max(x => x.ShirtsId);
-            shirt.ShirtsId = maxId + 1;
 
-            //判断shirt的Guid是否存在，不存在则增加 存在则拒绝增加
-            if (shirts.Any(x => x.GuidId == shirt.GuidId))
-            {
-                result = $"已存在Guid为{shirt.GuidId}的衬衫，无法添加重复Guid的衬衫";
-                return false;
-            }
-
-
-            shirts.Add(shirt);
-            result = $"成功添加{shirt.ToString()}";
-            return true;
-        }
     }
 }
