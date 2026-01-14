@@ -53,25 +53,11 @@ namespace Ly_WebApi
                 app.UseSwaggerExt();
             }
 
-            //内联中间件
-            app.Use(async (HttpContext context, RequestDelegate next) =>
-            {
-                await context.Response.WriteAsync("middle ware#1,before next");
-                await next(context);
-                await context.Response.WriteAsync("middle ware#1,after next");
-            });
 
-            //内联中间件
-            app.Use(async (HttpContext context, RequestDelegate next) =>
-            {
-                await context.Response.WriteAsync("middle ware#2,before next");
-                await next(context);
-                await context.Response.WriteAsync("middle ware#3,after next");
-            });
 
             app.UseAuthorization();
 
-            app.MapControllers(); //将控制器
+            app.MapControllers(); //将控制器映射到路由
 
             app.Run();
         }

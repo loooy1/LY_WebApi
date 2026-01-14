@@ -67,6 +67,81 @@ swagger用于可视化接口信息 在线调试 版本控制
 </details>
 
 <details>
+<summary>## 中间件</summary>
+
+1. 什么是中间件？
+
+    ```
+    中间件(Middleware)是ASP.NET Core请求处理管道中的组件，用于处理HTTP请求和响应。
+    它们按顺序链接在一起，形成一个处理链，每个中间件可以对请求进行处理、修改或传递给下一个中间件。
+    中间件就是函数调用
+
+    ```
+2. 中间件种类及作用
+    
+    内置中间件（框架提供，常用）
+    ```
+    认证/授权：如 app.UseAuthorization()（验证用户身份/权限，保护端点）。
+    路由/端点映射：如 app.MapControllers()（将请求路由到控制器）。
+    静态文件服务：app.UseStaticFiles()（提供 CSS/JS/图片等静态资源）。
+    Swagger：app.UseSwaggerExt()（生成 API 文档界面）。
+    异常处理：app.UseExceptionHandler()（捕获全局异常，返回友好错误页面）。
+    CORS：app.UseCors()（允许跨域请求）。
+    HTTPS 重定向：app.UseHttpsRedirection()（强制 HTTPS）。
+    ```
+    自定义中间件
+
+    #内联中间件(临时简单/不好复用)：
+    ```
+    //#1
+    app.Use(async (HttpContext context, RequestDelegate next) =>
+    {
+        await context.Response.WriteAsync("middle ware#1,before next\r\n");
+        await next(context);
+        await context.Response.WriteAsync("middle ware#1,after next\r\n");
+    });
+
+    //#2
+    app.Use(async (HttpContext context, RequestDelegate next) =>
+    {
+        await context.Response.WriteAsync("middle ware#2,before next\r\n");
+        await next(context);
+        await context.Response.WriteAsync("middle ware#3,after next\r\n");
+    });
+
+    输出：
+    middle ware#1,before next
+    middle ware#2,before next
+    middle ware#3,after next
+    middle ware#1,after next
+
+    解释：
+    1. 请求进来时，先经过中间件#1，输出"before next"，然后调用next(context)传递给下一个中间件
+    2. 中间件#2接收到请求，输出"before next"，然后调用next(context)传递给下一个中间件
+    3. 没有更多中间件了，请求开始返回，先执行中间件#2的"after next"，然后返回到中间件#1
+    
+    ps：内联中间件如果不调用 next(context)，请求就不会传递到下一个中间件，形成终结中间件。
+    ```
+
+
+    #专用中间件(独立类，易复用/维护)：
+    todo
+
+
+    终结中间件（不调用下游）
+    ```
+    app.Run(async (HttpContext context) =>
+    {
+        await context.Response.WriteAsync("This is the terminal middleware.\r\n");
+    });
+    ```
+
+
+
+</details>
+
+
+<details>
 <summary>## EFcore操作数据库</summary>
 
 1. 需要nuget相关的包
