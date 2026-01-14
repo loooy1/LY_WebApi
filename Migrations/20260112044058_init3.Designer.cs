@@ -4,6 +4,7 @@ using LY_WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LY_WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112044058_init3")]
+    partial class init3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,6 +54,10 @@ namespace LY_WebApi.Migrations
                     b.Property<int>("Size")
                         .HasColumnType("int");
 
+                    b.Property<string>("Test111")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id");
 
                     b.ToTable("shirt");
@@ -64,7 +71,8 @@ namespace LY_WebApi.Migrations
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000001"),
                             MyProperty = 50,
-                            Size = 5
+                            Size = 5,
+                            Test111 = ""
                         },
                         new
                         {
@@ -74,7 +82,8 @@ namespace LY_WebApi.Migrations
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000002"),
                             MyProperty = 51,
-                            Size = 5
+                            Size = 5,
+                            Test111 = ""
                         },
                         new
                         {
@@ -84,7 +93,8 @@ namespace LY_WebApi.Migrations
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000003"),
                             MyProperty = 52,
-                            Size = 5
+                            Size = 5,
+                            Test111 = ""
                         },
                         new
                         {
@@ -94,7 +104,8 @@ namespace LY_WebApi.Migrations
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000004"),
                             MyProperty = 53,
-                            Size = 5
+                            Size = 5,
+                            Test111 = ""
                         },
                         new
                         {
@@ -104,7 +115,8 @@ namespace LY_WebApi.Migrations
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000005"),
                             MyProperty = 54,
-                            Size = 5
+                            Size = 5,
+                            Test111 = ""
                         },
                         new
                         {
@@ -114,7 +126,8 @@ namespace LY_WebApi.Migrations
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000006"),
                             MyProperty = 55,
-                            Size = 5
+                            Size = 5,
+                            Test111 = ""
                         });
                 });
 #pragma warning restore 612, 618

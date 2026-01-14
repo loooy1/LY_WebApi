@@ -19,7 +19,10 @@ namespace LY_WebApi.Data
 
         }
 
-
+        /// <summary>
+        /// 映射数据库shirt表的属性 
+        /// 通过这个属性 就可以对shirt表进行增删改查操作
+        /// </summary>
         public DbSet<Shirts> shirt { get; set; }
 
         /// <summary>
@@ -30,14 +33,14 @@ namespace LY_WebApi.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            //把数据写入到数据库中
+            //种子数据 把数据写入到数据库中
             modelBuilder.Entity<Shirts>().HasData(
-                new Shirts() { ShirtsId = 1, Brand = "品牌1", Color = "黑", Size = 5, Gender = "男", MyProperty = 50, GuidId = new Guid("00000000-0000-0000-0000-000000000001") },
-                new Shirts() { ShirtsId = 2, Brand = "品牌2", Color = "黑", Size = 5, Gender = "男", MyProperty = 51, GuidId = new Guid("00000000-0000-0000-0000-000000000002") },
-                new Shirts() { ShirtsId = 3, Brand = "品牌3", Color = "黑", Size = 5, Gender = "男", MyProperty = 52, GuidId = new Guid("00000000-0000-0000-0000-000000000003") },
-                new Shirts() { ShirtsId = 4, Brand = "品牌4", Color = "黑", Size = 5, Gender = "男", MyProperty = 53, GuidId = new Guid("00000000-0000-0000-0000-000000000004") },
-                new Shirts() { ShirtsId = 5, Brand = "品牌5", Color = "黑", Size = 5, Gender = "男", MyProperty = 54, GuidId = new Guid("00000000-0000-0000-0000-000000000005") },
-                new Shirts() { ShirtsId = 6, Brand = "品牌6", Color = "黑", Size = 5, Gender = "男", MyProperty = 55, GuidId = new Guid("00000000-0000-0000-0000-000000000006") }
+                new Shirts() { Id = 1, Brand = "品牌1", Color = "黑", Size = 5, Gender = "男", MyProperty = 50, GuidId = new Guid("00000000-0000-0000-0000-000000000001") },
+                new Shirts() { Id = 2, Brand = "品牌2", Color = "黑", Size = 5, Gender = "男", MyProperty = 51, GuidId = new Guid("00000000-0000-0000-0000-000000000002") },
+                new Shirts() { Id = 3, Brand = "品牌3", Color = "黑", Size = 5, Gender = "男", MyProperty = 52, GuidId = new Guid("00000000-0000-0000-0000-000000000003") },
+                new Shirts() { Id = 4, Brand = "品牌4", Color = "黑", Size = 5, Gender = "男", MyProperty = 53, GuidId = new Guid("00000000-0000-0000-0000-000000000004") },
+                new Shirts() { Id = 5, Brand = "品牌5", Color = "黑", Size = 5, Gender = "男", MyProperty = 54, GuidId = new Guid("00000000-0000-0000-0000-000000000005") },
+                new Shirts() { Id = 6, Brand = "品牌6", Color = "黑", Size = 5, Gender = "男", MyProperty = 55, GuidId = new Guid("00000000-0000-0000-0000-000000000006") }
                 );
         }
     }

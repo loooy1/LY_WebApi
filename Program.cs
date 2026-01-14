@@ -1,57 +1,77 @@
+ï»¿using System.Reflection;
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
+using LY_WebApi.Common.SwaggerExtension;
 using LY_WebApi.Data;
-using LY_WebApi_SwaggerSetting.SwaggerExt;
+using LY_WebApi.Models.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ly_WebApi
 {
 
     /// <summary>
-    /// IOCÈİÆ÷£ºÓÃÓÚ´´½¨ÊµÀı¡£ÏÈ×¢ÈëÈİÆ÷£¬ÔÙÓÃÈİÆ÷»ñµÃÊµÀı
-    /// Èç¹ûÊµÀıAÒÀÀµÓÚÊµÀıB  IOC»á×Ô¶¯´¦ÀíÒÀÀµ¹ØÏµ£¬Ç°ÌáÊÇA B¶¼×¢Èëµ½ÈİÆ÷ÖĞ
-    /// ¹¹Ôìº¯Êı×¢Èë  ·½·¨×¢Èë(ĞèÒª±ê×¢[FromServices])
+    /// IOCå®¹å™¨ï¼šç”¨äºåˆ›å»ºå®ä¾‹ã€‚å…ˆæ³¨å…¥å®¹å™¨ï¼Œå†ç”¨å®¹å™¨è·å¾—å®ä¾‹
+    /// å¦‚æœå®ä¾‹Aä¾èµ–äºå®ä¾‹B  IOCä¼šè‡ªåŠ¨å¤„ç†ä¾èµ–å…³ç³»ï¼Œå‰ææ˜¯A Béƒ½æ³¨å…¥åˆ°å®¹å™¨ä¸­
+    /// æ„é€ å‡½æ•°æ³¨å…¥  æ–¹æ³•æ³¨å…¥(éœ€è¦æ ‡æ³¨[FromServices])
     /// </summary>
     public class Program
     {
+        /// <summary>
+        /// ä¸»ç¨‹åºå…¥å£
+        /// </summary>
+        /// <param name="args"></param>
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Ìí¼Ó¿ØÖÆÆ÷·şÎñ
+            // æ·»åŠ æ§åˆ¶å™¨æœåŠ¡
             builder.Services.AddControllers();
 
-            //Ìí¼ÓÊı¾İ¿âÁ¬½Ó·şÎñ
+            //æ³¨å†Œæ•°æ®åº“è¿æ¥æœåŠ¡
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
-                //²ÎÊı1ÊÇÁ¬½Ó×Ö·û´® ²ÎÊı2ÊÇmysqlµÄ°æ±¾ºÅ
+                //å‚æ•°1æ˜¯è¿æ¥å­—ç¬¦ä¸² å‚æ•°2æ˜¯mysqlçš„ç‰ˆæœ¬å·
                 options.UseMySql(builder.Configuration.GetConnectionString("MysqlConnection"), new MySqlServerVersion(new Version(8, 0, 36)));
             }
             );
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // ã€è¯´æ˜ï¼šå½“å‰æ˜¯Controllerå¼€å‘ï¼Œæ­¤è¡Œå¯åˆ ï¼Œä¸å½±å“è¿è¡Œï¼›ä¸ºå…¼å®¹MinimalAPI+å®˜æ–¹è§„èŒƒï¼Œä¿ç•™ã€‘
             builder.Services.AddEndpointsApiExplorer();
 
-            //·â×°SwaggerÍØÕ¹
+            //æ³¨å†Œsqlæ“ä½œä»“åº“æœåŠ¡
+            builder.Services.AddScoped(typeof(SqlRepository<>));
+
+            //æ³¨å†Œç‰ˆæœ¬æ§åˆ¶æœåŠ¡
             builder.Services.AddSwaggerExt();
 
+            //æœåŠ¡æ³¨å†Œç»“æŸ å¯ç”¨æœåŠ¡
             var app = builder.Build();
 
-
-
-            //Ê¹ÓÃSwaggerÍØÕ¹
             if (app.Environment.IsDevelopment())
             {
+                //å¯ç”¨swaggeræœåŠ¡
                 app.UseSwaggerExt();
             }
 
+            //å†…è”ä¸­é—´ä»¶
+            app.Use(async (HttpContext context, RequestDelegate next) =>
+            {
+                await context.Response.WriteAsync("middle ware#1,before next");
+                await next(context);
+                await context.Response.WriteAsync("middle ware#1,after next");
+            });
 
-            //app.MapGet("/GetShirts", () => {
-
-            //    return "»ñÈ¡ËùÓĞ³ÄÉÀ";
-            //});
+            //å†…è”ä¸­é—´ä»¶
+            app.Use(async (HttpContext context, RequestDelegate next) =>
+            {
+                await context.Response.WriteAsync("middle ware#2,before next");
+                await next(context);
+                await context.Response.WriteAsync("middle ware#3,after next");
+            });
 
             app.UseAuthorization();
 
-            app.MapControllers(); //½«¿ØÖÆÆ÷
+            app.MapControllers(); //å°†æ§åˆ¶å™¨
 
             app.Run();
         }

@@ -1,8 +1,9 @@
 ﻿# 此项目为学习Web_API而创建的示例项目。
 
 <details>
-<summary>## 概述</summary>
+<summary>## 理解概念</summary>
 
+```
 app.UseAuthorization(); 所有带use的都是中间件
 
 MVC也是一个中间件。
@@ -12,6 +13,11 @@ MVC也是一个中间件。
 控制器调用 Model（Shirts 类、业务逻辑）处理数据；
 控制器返回 IActionResult 响应（无 View 渲染）；
 响应经过滤器、中间件返回客户端。
+
+swagger用于可视化接口信息 在线调试 版本控制
+
+
+```
 
 </details>
 
@@ -30,6 +36,8 @@ MVC也是一个中间件。
 
     swagger相关
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.1" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
     ```
 
 2. 框架
@@ -76,6 +84,26 @@ MVC也是一个中间件。
     5. 控制器Controller  → 注入AppDbContext，调用它的方法操作数据库
     6. MySQL数据库       → 接收SQL指令，返回数据结果
     ```
+3. 迁移命令
+    ```
+    1. Add-Migration Init1 // 生成迁移文件
+    2. update-database // 更新数据库
+    
+    ps1:如果想修改数据库的结构，就要先修改实体类，然后重新生成迁移文件，再更新数据库
+    ps2:更新数据库结构的话记得修改数据库的种子数据
+    ps3:修改主键的话要麻烦一些，要修改迁移文件(因为efcore会默认删除主键添加修改后的主键)
+    ```
+
+</details>
+
+<details>
+<summary>## 架构_分层</summary>
+
+```
+控制器层(controller) ----> 业务层(services)  ----> 仓储层(Repository) 
+----> 数据访问层(appContext) ----> 数据库(Mysql)
+
+```
 
 </details>
 
@@ -102,5 +130,40 @@ MVC也是一个中间件。
     dotnet ef migrations add Init2
     dotnet ef database update
     ```
+2.  为什么http响应的json数据是驼峰法命名，和定义的属性名不同？
+    ```
+    因为默认json序列化是驼峰法，此处设置会关闭默认命名
+    // 添加控制器服务
+    builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        // ========== 核心配置1：关闭自动驼峰命名转换 → C#属性名 原样输出到JSON ==========
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    }
+    );
+
+3. .net框架默认返回的响应格式冗余
+    ```
+    可在这修改默认的400响应，用中间件去修改其他默认的响应
+        builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+    {
+        // 覆盖框架默认的400响应逻辑
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errorMsg = string.Join("；", context.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            var result = ApiResponse.Fail(msg:$"请求参数错误：{errorMsg}");
+            return new BadRequestObjectResult(result);
+        };
+    });
+
+4. 如何切换生产环境和开发环境？
+    ```
+    if (app.Environment.IsDevelopment())
+    {
+    .....
+    .....
+    }
+
+    本地调试时，默认就是Development，在项目的launchSettings.json文件中配置
+    部署到服务器时，通过环境变量ASPNETCORE_ENVIRONMENT=Production配置，项目会自动识别
 
 </details>

@@ -10,12 +10,12 @@ namespace LY_WebApi.Models.Repository
         //存储几个实例
         private static List<Shirts> shirts = new List<Shirts>()
         {
-            new Shirts(){ShirtsId =1,Brand="品牌1",Color="黑",Size=5,Gender="男",MyProperty=50,GuidId=new Guid("00000000-0000-0000-0000-000000000001")},
-            new Shirts(){ShirtsId =2,Brand="品牌2",Color="黑",Size=5,Gender="男",MyProperty=51,GuidId=new Guid("00000000-0000-0000-0000-000000000002")},
-            new Shirts(){ShirtsId =3,Brand="品牌3",Color="黑",Size=5,Gender="男",MyProperty=52,GuidId=new Guid("00000000-0000-0000-0000-000000000003")},
-            new Shirts(){ShirtsId =4,Brand="品牌4",Color="黑",Size=5,Gender="男",MyProperty=53,GuidId=new Guid("00000000-0000-0000-0000-000000000004")},
-            new Shirts(){ShirtsId =5,Brand="品牌5",Color="黑",Size=5,Gender="男",MyProperty=54,GuidId=new Guid("00000000-0000-0000-0000-000000000005")},
-            new Shirts(){ShirtsId =6,Brand="品牌6",Color="黑",Size=5,Gender="男",MyProperty=55,GuidId=new Guid("00000000-0000-0000-0000-000000000006")},
+            new Shirts(){Id =1,Brand="品牌1",Color="黑",Size=5,Gender="男",MyProperty=50,GuidId=new Guid("00000000-0000-0000-0000-000000000001")},
+            new Shirts(){Id =2,Brand="品牌2",Color="黑",Size=5,Gender="男",MyProperty=51,GuidId=new Guid("00000000-0000-0000-0000-000000000002")},
+            new Shirts(){Id =3,Brand="品牌3",Color="黑",Size=5,Gender="男",MyProperty=52,GuidId=new Guid("00000000-0000-0000-0000-000000000003")},
+            new Shirts(){Id =4,Brand="品牌4",Color="黑",Size=5,Gender="男",MyProperty=53,GuidId=new Guid("00000000-0000-0000-0000-000000000004")},
+            new Shirts(){Id =5,Brand="品牌5",Color="黑",Size=5,Gender="男",MyProperty=54,GuidId=new Guid("00000000-0000-0000-0000-000000000005")},
+            new Shirts(){Id =6,Brand="品牌6",Color="黑",Size=5,Gender="男",MyProperty=55,GuidId=new Guid("00000000-0000-0000-0000-000000000006")},
 
         };
 
@@ -35,7 +35,7 @@ namespace LY_WebApi.Models.Repository
         /// <returns></returns>
         public static bool ShirtExists(int id)
         {
-            return shirts.Any(x => x.ShirtsId == id);
+            return shirts.Any(x => x.Id == id);
         }
 
         /// <summary>
@@ -46,8 +46,8 @@ namespace LY_WebApi.Models.Repository
         /// <returns></returns>
         public static bool AddShirt(Shirts shirt, out ValidationProblemDetails result)
         {
-            var maxId = shirts.Max(x => x.ShirtsId);
-            shirt.ShirtsId = shirts.Any(x => x.ShirtsId == shirt.ShirtsId) ? maxId + 1 : shirt.ShirtsId;
+            var maxId = shirts.Max(x => x.Id);
+            shirt.Id = shirts.Any(x => x.Id == shirt.Id) ? maxId + 1 : shirt.Id;
             var problemDetails = new ValidationProblemDetails();
 
             //判断shirt的Guid是否存在于仓库，不存在则增加 存在则拒绝增加
@@ -76,13 +76,13 @@ namespace LY_WebApi.Models.Repository
         public static bool UpdateShirt(Shirts shirt, out ValidationProblemDetails result)
         {
             var problemDetails = new ValidationProblemDetails();
-            var shirtToUpdate = shirts.FirstOrDefault(x => x.ShirtsId == shirt.ShirtsId && x.GuidId == shirt.GuidId);
+            var shirtToUpdate = shirts.FirstOrDefault(x => x.Id == shirt.Id && x.GuidId == shirt.GuidId);
 
             //存在要更新的衬衫
             if (shirtToUpdate != null)
             {
 
-                shirtToUpdate.ShirtsId = shirt.ShirtsId;
+                shirtToUpdate.Id = shirt.Id;
                 shirtToUpdate.Brand = shirt.Brand;
                 shirtToUpdate.Color = shirt.Color;
                 shirtToUpdate.Size = shirt.Size;
@@ -99,7 +99,7 @@ namespace LY_WebApi.Models.Repository
 
             problemDetails.Status = StatusCodes.Status400BadRequest;
             problemDetails.Title = "Failed";
-            problemDetails.Detail = $"更新失败，ShirtsId或GuidId未找到对应的衬衫";
+            problemDetails.Detail = $"更新失败，Id或GuidId未找到对应的衬衫";
 
             result = problemDetails;
             return false;
@@ -112,7 +112,7 @@ namespace LY_WebApi.Models.Repository
         /// <returns></returns>
         public static bool DeleteShirtsById(int shirtId, out ValidationProblemDetails result)
         {
-            var shirtToDelete = shirts.FirstOrDefault(x => x.ShirtsId == shirtId);
+            var shirtToDelete = shirts.FirstOrDefault(x => x.Id == shirtId);
             var problemDetails = new ValidationProblemDetails();
             if (shirtToDelete != null)
             {
@@ -142,7 +142,7 @@ namespace LY_WebApi.Models.Repository
         /// <returns></returns>
         public static Shirts? GetShirtsById(int id)
         {
-            return shirts.FirstOrDefault(x => x.ShirtsId == id);
+            return shirts.FirstOrDefault(x => x.Id == id);
         }
 
 

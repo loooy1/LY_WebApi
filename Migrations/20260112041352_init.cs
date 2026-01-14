@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LY_WebApi.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,12 +17,11 @@ namespace LY_WebApi.Migrations
             migrationBuilder.AlterDatabase()
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            //创建表
             migrationBuilder.CreateTable(
                 name: "shirt",
                 columns: table => new
                 {
-                    ShirtsId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     GuidId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Brand = table.Column<string>(type: "longtext", nullable: false)
@@ -35,14 +35,13 @@ namespace LY_WebApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_shirt", x => x.ShirtsId);
+                    table.PrimaryKey("PK_shirt", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            //插入原始数据
             migrationBuilder.InsertData(
                 table: "shirt",
-                columns: new[] { "ShirtsId", "Brand", "Color", "Gender", "GuidId", "MyProperty", "Size" },
+                columns: new[] { "Id", "Brand", "Color", "Gender", "GuidId", "MyProperty", "Size" },
                 values: new object[,]
                 {
                     { 1, "品牌1", "黑", "男", new Guid("00000000-0000-0000-0000-000000000001"), 50, 5 },

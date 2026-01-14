@@ -1,4 +1,7 @@
-﻿using LY_WebApi.Models.Repository;
+﻿using LY_WebApi.Common;
+using LY_WebApi.Data;
+using LY_WebApi.Models;
+using LY_WebApi.Models.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -9,7 +12,21 @@ namespace LY_WebApi.Filter.ActionValidations
     /// </summary>
     public class Shirts_ValidateShirtIdFilterAttribute : ActionFilterAttribute
     {
-        public override void OnActionExecuting(ActionExecutingContext context)
+        private readonly SqlRepository<Shirts> repository;
+
+        /// <summary>
+        /// 构造函数 注入[[sql操作仓库服务]]
+        /// </summary>
+        public Shirts_ValidateShirtIdFilterAttribute(SqlRepository<Shirts> repository)
+        {
+            this.repository = repository;
+        }
+
+        /// <summary>
+        /// 动作执行前验证衬衫id
+        /// </summary>
+        /// <param name="context"></param>
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             base.OnActionExecuting(context);
 
@@ -23,21 +40,19 @@ namespace LY_WebApi.Filter.ActionValidations
                 {
                     context.ModelState.AddModelError("id", "衬衫id必须大于等于0");
 
-                    //用于标准化API错误响应
-                    var problemDetails = new ValidationProblemDetails(context.ModelState)
-                    {
-                        Status = StatusCodes.Status400BadRequest
-                    };
+                    context.Result = new BadRequestObjectResult(ApiResponse.Fail("衬衫id必须大于等于0", 400));
 
-                    context.Result = new BadRequestObjectResult(problemDetails);
+                    return;
                 }
-                //如果衬衫内存仓库不存在对应id的衬衫
-                else if (!Shirt_Repository.ShirtExists(shirtId.Value))
+                else
                 {
-                    context.ModelState.AddModelError("id", $"不存在id为{shirtId.Value}的衬衫");
-                    context.Result = new NotFoundObjectResult(context.ModelState);
-                }
+                    //从数据库中获取衬衫
+                    var shirt = await repository.GetById(shirtId.Value);
 
+                    context.HttpContext.Items["shirt"] = shirt;
+
+                    await next();
+                }
             }
         }
     }

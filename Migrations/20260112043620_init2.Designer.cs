@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LY_WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260110034513_Init")]
-    partial class Init
+    [Migration("20260112043620_init2")]
+    partial class init2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,11 @@ namespace LY_WebApi.Migrations
 
             modelBuilder.Entity("LY_WebApi.Models.Shirts", b =>
                 {
-                    b.Property<int>("ShirtsId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ShirtsId"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Brand")
                         .IsRequired()
@@ -54,70 +54,80 @@ namespace LY_WebApi.Migrations
                     b.Property<int>("Size")
                         .HasColumnType("int");
 
-                    b.HasKey("ShirtsId");
+                    b.Property<string>("Test")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
 
                     b.ToTable("shirt");
 
                     b.HasData(
                         new
                         {
-                            ShirtsId = 1,
+                            Id = 1,
                             Brand = "品牌1",
                             Color = "黑",
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000001"),
                             MyProperty = 50,
-                            Size = 5
+                            Size = 5,
+                            Test = "Test"
                         },
                         new
                         {
-                            ShirtsId = 2,
+                            Id = 2,
                             Brand = "品牌2",
                             Color = "黑",
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000002"),
                             MyProperty = 51,
-                            Size = 5
+                            Size = 5,
+                            Test = "Test"
                         },
                         new
                         {
-                            ShirtsId = 3,
+                            Id = 3,
                             Brand = "品牌3",
                             Color = "黑",
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000003"),
                             MyProperty = 52,
-                            Size = 5
+                            Size = 5,
+                            Test = "Test"
                         },
                         new
                         {
-                            ShirtsId = 4,
+                            Id = 4,
                             Brand = "品牌4",
                             Color = "黑",
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000004"),
                             MyProperty = 53,
-                            Size = 5
+                            Size = 5,
+                            Test = "Test"
                         },
                         new
                         {
-                            ShirtsId = 5,
+                            Id = 5,
                             Brand = "品牌5",
                             Color = "黑",
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000005"),
                             MyProperty = 54,
-                            Size = 5
+                            Size = 5,
+                            Test = "Test"
                         },
                         new
                         {
-                            ShirtsId = 6,
+                            Id = 6,
                             Brand = "品牌6",
                             Color = "黑",
                             Gender = "男",
                             GuidId = new Guid("00000000-0000-0000-0000-000000000006"),
                             MyProperty = 55,
-                            Size = 5
+                            Size = 5,
+                            Test = "Test"
                         });
                 });
 #pragma warning restore 612, 618

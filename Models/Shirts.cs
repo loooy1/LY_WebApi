@@ -7,7 +7,7 @@ namespace LY_WebApi.Models
     {
         //id
         [Shirts_ShirtIdValidation]
-        public int ShirtsId { get; set; }
+        public int Id { get; set; }
 
         // 唯一标识（UUID）
         [Required(ErrorMessage = "此项不能为空")]
@@ -37,7 +37,7 @@ namespace LY_WebApi.Models
         // 重写ToString()，拼接所有属性
         public override string ToString()
         {
-            return $"id为{ShirtsId}，品牌：{Brand ?? "未填写"}，颜色：{Color ?? "未填写"}，尺寸：{Size}，性别：{Gender ?? "未填写"}，价格：{MyProperty}元，GuidId：{GuidId}";
+            return $"id为{Id}，品牌：{Brand ?? "未填写"}，颜色：{Color ?? "未填写"}，尺寸：{Size}，性别：{Gender ?? "未填写"}，价格：{MyProperty}元，GuidId：{GuidId}";
         }
     }
 
