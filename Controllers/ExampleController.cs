@@ -1,12 +1,10 @@
 ﻿using Asp.Versioning;
 using LY_WebApi.Common;
-using LY_WebApi.Data;
 using LY_WebApi.Filter.ActionValidations;
 using LY_WebApi.Filter.ExceptionFilters;
 using LY_WebApi.Models;
-using LY_WebApi.Models.Repository;
+using LY_WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LY_WebApi.Controllers
 {
@@ -17,16 +15,21 @@ namespace LY_WebApi.Controllers
     [Route("LYwebapi/v{version:apiVersion}/[controller]")]
     [Shirts_ExceptionFilter]
     [ApiVersion("1.0")]
+    [ApiVersion("1.1")]
+    [ApiVersion("2.0")]
     public class ExampleController : ControllerBase
     {
-        private readonly SqlRepository<Shirts> repository;
+        /// <summary>
+        /// 业务逻辑服务
+        /// </summary>
+        private readonly ExampleService service;
 
         /// <summary>
-        /// 构造函数 注入[sql操作仓库服务]
+        /// 构造函数 注入业务服务
         /// </summary>
-        public ExampleController(SqlRepository<Shirts> repository)
+        public ExampleController(ExampleService service)
         {
-            this.repository = repository;
+            this.service = service;
         }
 
         #region 简单无数据查询
@@ -37,7 +40,6 @@ namespace LY_WebApi.Controllers
         /// <param name="RouteData"></param>
         /// <returns></returns>
         [HttpGet("dataFromRoute/{RouteData}")]
-        [ApiVersion("2.0")]
         public IActionResult AddDataFromRoute([FromRoute] string RouteData)
         {
             return Ok($"获取“路由”数据：{RouteData}");
@@ -89,9 +91,8 @@ namespace LY_WebApi.Controllers
         [HttpPost("addShirtData")]
         public async Task<IActionResult> AddShirtData([FromBody] Shirts shirts)
         {
-            await repository.Add(shirts);
-
-            return Ok(ApiResponse.Success(shirts,msg:"添加数据成功"));
+            var result = await service.AddAsync(shirts);
+            return Ok(ApiResponse.Success(result, msg: "添加数据成功"));
         }
 
         /// <summary>
@@ -102,8 +103,7 @@ namespace LY_WebApi.Controllers
         [TypeFilter(typeof(Shirts_ValidateShirtIdFilterAttribute))]
         public async Task<IActionResult> DeleteShirtData(int id)
         {
-            var res = await repository.Delete(id);
-
+            var res = await service.DeleteAsync(id);
             return Ok(ApiResponse.Success(res, msg: $"id：{id}的数据删除成功"));
         }
 
@@ -115,38 +115,33 @@ namespace LY_WebApi.Controllers
         [HttpPut("updateShirtData")]
         public async Task<IActionResult> UpdateShirtData([FromBody] Shirts data)
         {
-            await repository.Update(data);
-
-            return Ok(ApiResponse.Success(data,msg: $"数据更新成功"));
+            var result = await service.UpdateAsync(data);
+            return Ok(ApiResponse.Success(result, msg: $"数据更新成功"));
         }
 
         /// <summary>
-        /// get方法 从http的body请求体中获取数据
+        /// get方法 获取所有数据
         /// </summary>
         /// <returns></returns>
         [HttpGet("GetShirtsData")]
         public async Task<IActionResult> GetShirts()
         {
-            var res = await repository.GetAll();
-
-            return Ok(ApiResponse.Success(res, msg: $"数据更新成功"));
+            var res = await service.GetAllAsync();
+            return Ok(ApiResponse.Success(res, msg: $"数据获取成功"));
         }
 
         /// <summary>
-        /// get方法 从http的路由中获取数据 并专注于返回类型
+        /// get方法 根据id获取数据
         /// </summary>
         /// <param name="id"> 路由中的请求数据 </param>
         /// <returns> IActionResult 是 ASP.NET Core 中统一的 Action 返回接口，封装了所有 HTTP 响应细节 </returns>
         [HttpGet("getShirtDataById/{id}")]
         [TypeFilter(typeof(Shirts_ValidateShirtIdFilterAttribute))]
-        public IActionResult getShirtDataById([FromRoute] int id)
+        public async Task<IActionResult> GetShirtDataById([FromRoute] int id)
         {
-            //返回成功200
-            //数据是在 过滤器 中存储到 HttpContext.Items 中的
-            return Ok(ApiResponse.Success(HttpContext.Items["shirt"]));
+            var result = await service.GetByIdAsync(id);
+            return Ok(ApiResponse.Success(result));
         }
         //todo 通过前端表单数据 获取数据 
-
-
     }
 }

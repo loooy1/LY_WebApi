@@ -4,6 +4,7 @@ using Asp.Versioning.ApiExplorer;
 using LY_WebApi.Common.SwaggerExtension;
 using LY_WebApi.Data;
 using LY_WebApi.Models.Repository;
+using LY_WebApi.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ly_WebApi
@@ -24,6 +25,7 @@ namespace Ly_WebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            #region  框架服务注册
             // 添加控制器服务
             builder.Services.AddControllers();
 
@@ -38,11 +40,20 @@ namespace Ly_WebApi
             // 【说明：当前是Controller开发，此行可删，不影响运行；为兼容MinimalAPI+官方规范，保留】
             builder.Services.AddEndpointsApiExplorer();
 
+            //注册版本控制服务
+            builder.Services.AddSwaggerExt();
+            #endregion
+
+
+            #region 自定义服务注册
             //注册sql操作仓库服务
             builder.Services.AddScoped(typeof(SqlRepository<>));
 
-            //注册版本控制服务
-            builder.Services.AddSwaggerExt();
+            //注册业务逻辑服务
+            builder.Services.AddScoped<ExampleService>();
+            #endregion
+
+
 
             //服务注册结束 启用服务
             var app = builder.Build();
@@ -52,8 +63,6 @@ namespace Ly_WebApi
                 //启用swagger服务
                 app.UseSwaggerExt();
             }
-
-
 
             app.UseAuthorization();
 

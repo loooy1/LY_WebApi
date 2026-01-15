@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="类库项目\LY_WebAPI_Test\LY_WebAPI_Test.csproj" />
+    <ProjectReference Include="类库项目\LY_WebAPI_Test\LY_console_Test.csproj" />
   </ItemGroup>
 
 </Project>
