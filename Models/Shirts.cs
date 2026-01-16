@@ -3,35 +3,30 @@ using LY_WebApi.Filter.PropertyValidations;
 
 namespace LY_WebApi.Models
 {
-    public class Shirts
+    /// <summary>
+    /// 衬衫实体类，仅包含属性，不包含数据验证特性
+    /// </summary>
+        public class Shirts
     {
-        //id
-        [Shirts_ShirtIdValidation]
+        // id
         public int Id { get; set; }
 
         // 唯一标识（UUID）
-        [Required(ErrorMessage = "此项不能为空")]
         public Guid? GuidId { get; set; }
 
-        //品牌
-        [Required(ErrorMessage = "此项不能为空")]
+        // 品牌
         public string? Brand { get; set; }
 
-        //颜色
-        [Required(ErrorMessage = "此项不能为空")]
+        // 颜色
         public string? Color { get; set; }
 
-        //尺寸
-        [Required(ErrorMessage = "此项不能为空")]
-        [Shirts_GenderSizeValidation]
+        // 尺寸
         public int? Size { get; set; }
 
-        //性别
-        [Required(ErrorMessage = "此项不能为空")]
+        // 性别
         public string? Gender { get; set; }
 
-        //价格
-        [Required(ErrorMessage = "此项不能为空")] //[Required]表示 此数据不可为null 否则抛出异常 建议结合 ?可空使用，使必须传此参数
+        // 价格
         public int? MyProperty { get; set; }
 
         // 重写ToString()，拼接所有属性
@@ -40,5 +35,4 @@ namespace LY_WebApi.Models
             return $"id为{Id}，品牌：{Brand ?? "未填写"}，颜色：{Color ?? "未填写"}，尺寸：{Size}，性别：{Gender ?? "未填写"}，价格：{MyProperty}元，GuidId：{GuidId}";
         }
     }
-
 }

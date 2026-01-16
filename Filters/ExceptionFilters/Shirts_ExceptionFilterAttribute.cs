@@ -1,6 +1,8 @@
 ﻿using LY_WebApi.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 
 namespace LY_WebApi.Filter.ExceptionFilters
 {
@@ -14,7 +16,7 @@ namespace LY_WebApi.Filter.ExceptionFilters
         /// 重写异常处理方法
         /// </summary>
         /// <param name="context"></param>
-        public override void OnException(ExceptionContext context)
+        public override async Task OnExceptionAsync(ExceptionContext context)
         {
             // 1. 获取控制器+方法名
             string controllerName = context.RouteData.Values["controller"]?.ToString() ?? "未知控制器";
@@ -40,24 +42,37 @@ namespace LY_WebApi.Filter.ExceptionFilters
             string? stackTrace    = ex.StackTrace;         //堆栈信息
 
             // 4. 封装响应
-              var  errorResult = ApiResponse.Fail(
-                                                code:500, 
-                                                msg: "程序内部发生未处理异常", 
-                                                data: new
-                                                    {
-                                                    //触发位置
-                                                    ControllerAndAction = controllerAction,
-                                                    //异常类型
-                                                    ExceptionType = exceptionType,
-                                                    //异常消息
-                                                    ExceptionMessage = exceptionMsg 
-                                                    }
-                                                );
-            // 5. 标记异常已处理
-            context.Result = new JsonResult(errorResult)
+            ObjectResult errorResult;
+            var data = new
+                            {
+                                //触发位置 
+                                ControllerAndAction = controllerAction,
+                                //异常类型
+                                ExceptionType = exceptionType,
+                                //异常消息
+                                ExceptionMessage = exceptionMsg
+                            };
+
+            if (context.Exception is ArgumentNullException)
             {
-                StatusCode = StatusCodes.Status500InternalServerError
-            };
+                errorResult = new BadRequestObjectResult(ApiResponse.Fail(data, context.Exception.Message, 400));
+            }
+            else if (context.Exception is KeyNotFoundException)
+            {
+                errorResult = new NotFoundObjectResult(ApiResponse.Fail(data, context.Exception.Message, 404));
+            }
+            else if (context.Exception is DbUpdateException)
+            {
+                // 统一处理EF Core数据库更新异常
+                errorResult = new ObjectResult(ApiResponse.Fail(data, $"EFCore数据库异常", 503));
+            }
+            else
+            {
+                errorResult = new ObjectResult(ApiResponse.Fail(data, context.Exception.Message, 500));
+            }
+
+            // 5. 标记异常已处理
+            context.Result = errorResult;
 
             GeneralMethod.PrintWarning($"程序内部异常:[触发位置]:{controllerAction},[异常类型]:({exceptionType}),[异常消息]:({exceptionMsg})");
 

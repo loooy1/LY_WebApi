@@ -22,7 +22,7 @@ public class Shirts_GenderSizeValidationAttribute : ValidationAttribute
         // 步骤1：从校验上下文获取整个 Shirts 对象实例
         // validationContext.ObjectInstance → 绑定的整个模型（这里是 Shirts 对象）
         // 强转为 Shirts 类型，方便访问 Gender 和 Size 属性
-        var shirts = validationContext.ObjectInstance as Shirts;
+        var shirts = validationContext.ObjectInstance as ShirtDto;
 
         // 步骤2：前置判空，避免空引用异常
         // 条件：Shirts 对象不为空 + Gender 不为空/空白（非必填字段，无值则无需校验）

@@ -67,6 +67,96 @@ swagger用于可视化接口信息 在线调试 版本控制
 </details>
 
 <details>
+<summary>## 过滤器</summary>
+
+1. 什么是过滤器？
+    ```
+    过滤器(Filter)是ASP.NET Core MVC中的组件，用于在请求处理的不同阶段执行特定的逻辑。
+    它们可以在控制器方法执行之前或之后运行，以实现跨切面关注点（如日志记录、授权、异常处理等）的处理。
+    过滤器可以应用于控制器类或具体的控制器方法。
+
+2. 过滤器种类及作用
+
+    授权过滤器(Authorization Filters)
+    ```
+    在执行控制器方法之前运行，用于验证用户是否有权限访问特定资源。
+    ```
+
+    资源过滤器(Resource Filters)
+    ```
+    在授权过滤器之后运行，可以用于缓存响应或修改请求。
+    示例：
+    public class CustomAsyncResourceFilter : IAsyncResourceFilter
+    {
+        public async Task OnResourceExecutionAsync(ResourceExecutingContext context, ResourceExecutionDelegate next)
+        {
+            // 在控制器方法执行之前运行的异步逻辑
+
+            var executedContext = await next();
+
+            // 在控制器方法执行之后运行的异步逻辑
+        }
+    }
+    ```
+
+    操作过滤器(Action Filters)
+    ```
+    在控制器方法执行之前和之后运行，可以用于日志记录、性能监控等。
+    示例：
+    public class CustomAsyncActionFilter : ActionFilterAttribute
+    {
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+            // 在控制器方法执行之前运行的异步逻辑
+
+            var resultContext = await next();
+
+            // 在控制器方法执行之后运行的异步逻辑
+        }
+    }
+    ```
+
+    异常过滤器(Exception Filters)
+    ```
+    在控制器方法抛出异常时运行，用于处理异常并返回自定义错误响应。
+    示例：
+    public class CustomExceptionFilter : ExceptionFilterAttribute
+    {
+        public void OnException(ExceptionContext context)
+        {
+            // 处理异常逻辑
+            var response = new
+            {
+                Message = "An error occurred while processing your request.",
+                Details = context.Exception.Message
+            };
+            context.Result = new JsonResult(response)
+            {
+                StatusCode = StatusCodes.Status500InternalServerError
+            };
+            context.ExceptionHandled = true; // 标记异常已处理
+        }
+    }
+    ```
+
+    结果过滤器(Result Filters)
+    ```
+    在操作结果生成之后运行，可以用于修改响应数据或添加额外的响应头。
+    示例：
+    public class CustomAsyncResultFilter : IAsyncResultFilter
+    {
+        public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+        {
+            // 在操作结果生成之前运行的异步逻辑
+            var executedContext = await next();
+            // 在操作结果生成之后运行的异步逻辑
+        }
+    }
+    ```
+
+</details>
+
+<details>
 <summary>## 中间件</summary>
 
 1. 什么是中间件？
@@ -239,3 +329,5 @@ swagger用于可视化接口信息 在线调试 版本控制
     部署到服务器时，通过环境变量ASPNETCORE_ENVIRONMENT=Production配置，项目会自动识别
 
 </details>
+
+todo 

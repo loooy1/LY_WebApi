@@ -1,74 +1,76 @@
-﻿using LY_WebApi.Models;
-using LY_WebApi.Models.Repository;
+﻿using AutoMapper;
+using LY_WebApi.Models;
 
 namespace LY_WebApi.Services
 {
     /// <summary>
-    /// Shirts 实体的业务逻辑服务，提供增删改查异步操作
+    /// 示例服务，负责 Shirts 实体与 ShirtDto 的转换及业务操作
     /// </summary>
     public class ExampleService
     {
-        private readonly SqlRepository<Shirts> _repository;
+        private readonly LocalService<Shirts> _localService;
+        private readonly IMapper _mapper;
 
-        /// <summary>
-        /// 构造函数，注入 Shirts 仓储
-        /// </summary>
-        /// <param name="repository">Shirts 仓储</param>
-        public ExampleService(SqlRepository<Shirts> repository)
+        public ExampleService(LocalService<Shirts> localService, IMapper mapper)
         {
-            _repository = repository;
+            _localService = localService;
+            _mapper = mapper;
         }
 
         /// <summary>
-        /// 新增一条 Shirts 数据
+        /// 新增一条 ShirtDto 数据（DTO转实体后插入）
         /// </summary>
-        /// <param name="entity">Shirts 实体</param>
-        /// <returns>新增后的实体</returns>
-        public async Task<Shirts> AddAsync(Shirts entity)
+        public async Task<ShirtDto> AddAsync(ShirtDto dto)
         {
-            await _repository.Add(entity);
-            return entity;
+            var entity = _mapper.Map<Shirts>(dto);
+            // 可补全实体类的非DTO字段
+            entity.GuidId ??= new Guid("00000000-0000-0000-0000-000000000000");
+
+            var result = await _localService.AddAsync(entity);
+            return _mapper.Map<ShirtDto>(result);
         }
 
         /// <summary>
-        /// 根据主键删除一条 Shirts 数据
+        /// 更新一条 ShirtDto 数据（DTO转实体后更新）
         /// </summary>
-        /// <param name="id">Shirts 主键</param>
-        /// <returns>删除是否成功</returns>
-        public async Task<Shirts> DeleteAsync(int id)
+        public async Task<ShirtDto> UpdateAsync(ShirtDto dto)
         {
-            return await _repository.Delete(id);
+            var entity = _mapper.Map<Shirts>(dto);
+            // 查询数据库原始数据，保留未在DTO中的字段
+            var dbEntity = await _localService.GetByIdAsync(entity.Id);
+
+            entity.GuidId ??= new Guid("00000000-1111-1111-1111-000000000000");
+            // 其他需要保护的字段也可在此赋值
+
+            var result = await _localService.UpdateAsync(entity);
+            return _mapper.Map<ShirtDto>(result);
         }
 
         /// <summary>
-        /// 更新一条 Shirts 数据
+        /// 根据主键获取一条 ShirtDto 数据
         /// </summary>
-        /// <param name="entity">Shirts 实体</param>
-        /// <returns>更新后的实体</returns>
-        public async Task<Shirts> UpdateAsync(Shirts entity)
+        public async Task<ShirtDto?> GetByIdAsync(int id)
         {
-            await _repository.Update(entity);
-            return entity;
+            var entity = await _localService.GetByIdAsync(id);
+            return _mapper.Map<ShirtDto>(entity);
         }
 
         /// <summary>
-        /// 获取所有 Shirts 数据
+        /// 获取所有 ShirtDto 数据
         /// </summary>
-        /// <returns>Shirts 实体集合</returns>
-        public async Task<IEnumerable<Shirts>> GetAllAsync()
+        public async Task<IEnumerable<ShirtDto>> GetAllAsync()
         {
-            return await _repository.GetAll();
+            var entities = await _localService.GetAllAsync();
+            return _mapper.Map<IEnumerable<ShirtDto>>(entities);
         }
 
         /// <summary>
-        /// 根据主键获取一条 Shirts 数据
+        /// 根据主键删除一条 ShirtDto 数据
         /// </summary>
-        /// <param name="id">Shirts 主键</param>
-        /// <returns>Shirts 实体或 null</returns>
-        public async Task<Shirts?> GetByIdAsync(int id)
+        public async Task<ShirtDto> DeleteAsync(int id)
         {
-            // 假设仓储有 GetById 方法，否则需自行实现
-            return await _repository.GetById(id);
+            var result = await _localService.DeleteAsync(id);
+            return _mapper.Map<ShirtDto>(result);
         }
     }
 }

@@ -1,9 +1,10 @@
 ﻿using System.Reflection;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
+using LY_WebApi.Common;
 using LY_WebApi.Common.SwaggerExtension;
 using LY_WebApi.Data;
-using LY_WebApi.Models.Repository;
+using LY_WebApi.Repository;
 using LY_WebApi.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,6 +43,11 @@ namespace Ly_WebApi
 
             //注册版本控制服务
             builder.Services.AddSwaggerExt();
+
+            // 注册AutoMapper服务
+            builder.Services.AddAutoMapper(cfg => {
+                // 这里可以手动添加映射，也可以什么都不写，自动扫描 Profile
+            }, typeof(AutoMapperProfile).Assembly);
             #endregion
 
 
@@ -49,8 +55,12 @@ namespace Ly_WebApi
             //注册sql操作仓库服务
             builder.Services.AddScoped(typeof(SqlRepository<>));
 
-            //注册业务逻辑服务
+            //注册聚合业务服务层
             builder.Services.AddScoped<ExampleService>();
+
+            //注册内部业务服务层
+            builder.Services.AddScoped(typeof(LocalService<>));
+            
             #endregion
 
 

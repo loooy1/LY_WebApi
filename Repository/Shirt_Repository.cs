@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LY_WebApi.Models;
+using Microsoft.AspNetCore.Mvc;
 
-namespace LY_WebApi.Models.Repository
+namespace LY_WebApi.Repository
 {
     /// <summary>
     /// shirts 内存仓库

@@ -4,7 +4,7 @@
     "http": { //协议类型 http          
         "commandName": "Project",
         "dotnetRunMessages": true,
-        "launchBrowser": true, //启动浏览器
+        "launchBrowser": false, //启动浏览器
         "launchUrl": "swagger",
         "applicationUrl": "http://localhost:5233",
         "environmentVariables": {

@@ -1,7 +1,7 @@
 ﻿using LY_WebApi.Common;
 using LY_WebApi.Data;
 using LY_WebApi.Models;
-using LY_WebApi.Models.Repository;
+using LY_WebApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

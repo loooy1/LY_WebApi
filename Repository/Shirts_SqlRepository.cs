@@ -1,7 +1,7 @@
 ﻿using LY_WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace LY_WebApi.Models.Repository
+namespace LY_WebApi.Repository
 {
     /// <summary>
     /// 操作数据库的泛型仓库
@@ -31,7 +31,7 @@ namespace LY_WebApi.Models.Repository
             var res = await _db.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
             if (res == null)
             {
-                throw new ArgumentNullException(nameof(id), $"根据ID：{id}，未查询到对应数据！");
+                throw new KeyNotFoundException($"根据ID：{id}，未查询到对应数据！");
             }
             return res;
 
