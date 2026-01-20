@@ -6,12 +6,17 @@ namespace LY_WebApi.Services
     /// <summary>
     /// 示例服务，负责 Shirts 实体与 ShirtDto 的转换及业务操作
     /// </summary>
-    public class ExampleService
+    public class ExampleLocalService
     {
         private readonly LocalService<Shirts> _localService;
         private readonly IMapper _mapper;
 
-        public ExampleService(LocalService<Shirts> localService, IMapper mapper)
+        /// <summary>
+        /// 构造函数，注入泛型本地服务和 AutoMapper 映射器
+        /// </summary>
+        /// <param name="localService"></param>
+        /// <param name="mapper"></param>
+        public ExampleLocalService(LocalService<Shirts> localService, IMapper mapper)
         {
             _localService = localService;
             _mapper = mapper;
@@ -26,8 +31,14 @@ namespace LY_WebApi.Services
             // 可补全实体类的非DTO字段
             entity.GuidId ??= new Guid("00000000-0000-0000-0000-000000000000");
 
-            var result = await _localService.AddAsync(entity);
-            return _mapper.Map<ShirtDto>(result);
+            var result = await _localService.AddAsync(entity, x => x.Id == entity.Id);
+
+            if(!result.IsSuccess)
+
+                // 插入失败后抛出业务逻辑异常 让异常过滤器处理
+                throw new InvalidOperationException(result.Message);
+
+            return _mapper.Map<ShirtDto>(result.Data);
         }
 
         /// <summary>

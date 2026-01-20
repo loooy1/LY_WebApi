@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Text.Json;
 using System.Reflection;
-using LY_WebApi.Common;
+using LY_WebApi.Common.Response;
 
 namespace LY_WebApi.Filters.ResourceFilter
 {

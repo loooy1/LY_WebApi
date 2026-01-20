@@ -2,11 +2,19 @@
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using LY_WebApi.Common;
+using LY_WebApi.Common.Config;
+using LY_WebApi.Common.SerilogExt;
 using LY_WebApi.Common.SwaggerExtension;
 using LY_WebApi.Data;
+using LY_WebApi.MiddleWare;
 using LY_WebApi.Repository;
 using LY_WebApi.Services;
+using LY_WebApi.Services.Background;
+using LY_WebApi.Services.ExternalService;
+using LY_WebApi.Services.ExternalService.ExternalServiceBase;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Logging;
+using Serilog;
 
 namespace Ly_WebApi
 {
@@ -30,6 +38,11 @@ namespace Ly_WebApi
             // 添加控制器服务
             builder.Services.AddControllers();
 
+            builder.ConfigureSerilogExt(); //配置Serilog服务
+
+            // 注册配置
+            builder.Services.AddAllConfigs(builder.Configuration);
+
             //注册数据库连接服务
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
@@ -48,6 +61,9 @@ namespace Ly_WebApi
             builder.Services.AddAutoMapper(cfg => {
                 // 这里可以手动添加映射，也可以什么都不写，自动扫描 Profile
             }, typeof(AutoMapperProfile).Assembly);
+
+            // 服务层依赖HttpClient
+            builder.Services.AddHttpClient(); 
             #endregion
 
 
@@ -56,16 +72,28 @@ namespace Ly_WebApi
             builder.Services.AddScoped(typeof(SqlRepository<>));
 
             //注册聚合业务服务层
-            builder.Services.AddScoped<ExampleService>();
+            builder.Services.AddScoped<ExampleLocalService>();
 
             //注册内部业务服务层
             builder.Services.AddScoped(typeof(LocalService<>));
-            
+
+            //注册外部业务服务层
+            builder.Services.AddScoped<TestExternalService>();
+
+
+            // 服务层协议注入
+            // 键："Http" → 对应 Http协议实现类
+            builder.Services.AddKeyedScoped<IBaseService, HttpService<object>>("Http");
+            //可增加其他协议实现类
+
+            // 注册后台定时任务服务
+            builder.Services.AddHostedService<TimedBackgroundTask>();
             #endregion
 
 
 
-            //服务注册结束 启用服务
+
+            //服务注册结束 启用服务和配置中间件
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -74,10 +102,17 @@ namespace Ly_WebApi
                 app.UseSwaggerExt();
             }
 
+            //启用 ASP.NET Core 的授权中间件，用于检查用户身份和权限
             app.UseAuthorization();
 
-            app.MapControllers(); //将控制器映射到路由
+            //启用控制器处理请求
+            app.MapControllers();
 
+            #region 自定义中间件配置
+            app.UseGetIPMiddlewareExt(); //获取客户端IP中间件
+            #endregion
+
+            //运行应用程序
             app.Run();
         }
     }

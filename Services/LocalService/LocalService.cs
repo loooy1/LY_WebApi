@@ -1,4 +1,6 @@
-﻿using LY_WebApi.Repository;
+﻿using System.Linq.Expressions;
+using LY_WebApi.Common.Response;
+using LY_WebApi.Repository;
 
 namespace LY_WebApi.Services
 {
@@ -17,14 +19,14 @@ namespace LY_WebApi.Services
         public LocalService(SqlRepository<T> repository)
         {
             _repository = repository;
-        }   
+        }
 
         /// <summary>
-        /// 新增一条数据
+        /// 添加实体（如果不存在，根据业务逻辑检查）
         /// </summary>
-        public async Task<T> AddAsync(T entity)
+        public async Task<SqlOperationResult<T>> AddAsync(T entity, Expression<Func<T, bool>> predicate)
         {
-            return await _repository.Add(entity);
+            return await _repository.Add(entity, predicate);
         }
 
         /// <summary>

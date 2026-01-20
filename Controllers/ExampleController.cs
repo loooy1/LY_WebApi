@@ -1,5 +1,4 @@
 ﻿using Asp.Versioning;
-using LY_WebApi.Common;
 using LY_WebApi.Filter.ActionValidations;
 using LY_WebApi.Filter.ExceptionFilters;
 using LY_WebApi.Models;
@@ -7,6 +6,7 @@ using LY_WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using LY_WebApi.Filters.ResourceFilter;
+using LY_WebApi.Common.Response;
 
 namespace LY_WebApi.Controllers
 {
@@ -16,15 +16,14 @@ namespace LY_WebApi.Controllers
     [ApiController]
     [Route("LYwebapi/v{version:apiVersion}/[controller]")]
     [Shirts_ExceptionFilter]
+    [TypeFilter(typeof(GlobalRequestValidationFilter))]
     [ApiVersion("1.0")]
-    [ApiVersion("1.1")]
-    [ApiVersion("2.0")]
     public class ExampleController : ControllerBase
     {
-        private readonly ExampleService service;
+        private readonly ExampleLocalService service;
         private readonly IMapper mapper;
 
-        public ExampleController(ExampleService service, IMapper mapper)
+        public ExampleController(ExampleLocalService service, IMapper mapper)
         {
             this.service = service;
             this.mapper = mapper;
@@ -103,7 +102,7 @@ namespace LY_WebApi.Controllers
         /// <summary>
         /// 根据id获取衬衫数据（返回DTO）
         /// </summary>
-        [HttpGet("getShirtDataById/{id}")]
+        [HttpGet("getShirtsDataById/{id}")]
         [TypeFilter(typeof(Shirts_ValidateShirtIdFilterAttribute))]
         public async Task<IActionResult> GetShirtDataById([FromRoute] int id)
         {

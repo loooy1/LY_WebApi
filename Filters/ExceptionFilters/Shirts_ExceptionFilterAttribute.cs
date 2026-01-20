@@ -1,4 +1,5 @@
 ﻿using LY_WebApi.Common;
+using LY_WebApi.Common.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,10 @@ namespace LY_WebApi.Filter.ExceptionFilters
             {
                 // 统一处理EF Core数据库更新异常
                 errorResult = new ObjectResult(ApiResponse.Fail(data, $"EFCore数据库异常", 503));
+            }
+            else if (context.Exception is InvalidOperationException)
+            {
+                errorResult = new BadRequestObjectResult(ApiResponse.Fail(data, context.Exception.Message, 400));
             }
             else
             {

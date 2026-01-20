@@ -1,4 +1,4 @@
-﻿using LY_WebApi.Common;
+﻿using LY_WebApi.Common.Response;
 using LY_WebApi.Data;
 using LY_WebApi.Models;
 using LY_WebApi.Repository;

@@ -225,6 +225,36 @@ swagger用于可视化接口信息 在线调试 版本控制
         await context.Response.WriteAsync("This is the terminal middleware.\r\n");
     });
     ```
+
+    分支中间件（根据条件选择路径）
+    ```
+    // 简单分支中间件
+    app.Map("/branch", branchApp =>
+    {
+        branchApp.Run(async context =>
+        {
+            await context.Response.WriteAsync("This is the branch middleware.\r\n");
+        });
+    });
+    
+    // 根据请求查询参数决定是否进入分支中间件
+    app.MapWhen(context => context.Request.Query.ContainsKey("admin"),appBuilder => 
+    
+    {
+    appBuilder.Use(async (context, next) =>
+    {
+        await context.Response.WriteAsync("Admin middleware: ");
+        await next();
+    });
+
+    appBuilder.Run(async context =>
+    {
+        await context.Response.WriteAsync("Hello Admin!");
+    });
+    }
+
+    );
+
 </details>
 
 
@@ -330,4 +360,38 @@ swagger用于可视化接口信息 在线调试 版本控制
 
 </details>
 
-todo 
+
+<details>
+<summary>## 开发日志</summary>
+
+    1. before 2026-01-19
+        - 创建项目
+        - 配置swagger
+        - 配置EFcore连接MySQL
+        - 创建Shirts实体类和AppDbContext
+        - 生成迁移文件并更新数据库
+        - 创建ShirtsController实现CRUD接口
+        - 优化响应格式
+        - 添加请求参数验证过滤器
+        - 添加全局异常过滤器
+        - 分层架构重构（控制器-业务-仓储-数据访问）
+        - 优化swagger配置，添加版本控制
+        - 自定义中间件日志记录请求响应信息
+        - 优化异常过滤器，记录异常日志
+        - 添加种子数据初始化数据库
+        - 优化EFcore操作，添加异步方法支持
+        - 学习理解中间件和过滤器概念
+        - 优化代码结构，添加注释说明
+        - 测试接口功能，修复bug
+        - 优化日志记录格式
+    2. 2026-01-20
+        - serilog按需写入文件夹，文件夹为固定命名，可添加(LY_WebApi\Common\SerilogExt)
+        - 读取appsetting配置(LY_WebApi\Common\Config\ConfigExtensions.cs)
+
+
+        
+        
+
+    TODO:
+        - 根据配置去开启不同的后台任务或者服务
+</details>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LY_WebApi.Common
+namespace LY_WebApi.Common.Response
 {
     /// <summary>
     /// 全局统一API响应结果类
