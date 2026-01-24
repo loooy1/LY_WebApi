@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
+using System.Threading.Channels;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using LY_WebApi.Common;
-using LY_WebApi.Common.Config;
+using LY_WebApi.Common.AppsettingConfig;
+using LY_WebApi.Common.MediatR;
 using LY_WebApi.Common.SerilogExt;
 using LY_WebApi.Common.SwaggerExtension;
 using LY_WebApi.Data;
@@ -38,10 +40,14 @@ namespace Ly_WebApi
             // 添加控制器服务
             builder.Services.AddControllers();
 
-            builder.ConfigureSerilogExt(); //配置Serilog服务
+            //配置Serilog服务
+            builder.ConfigureSerilogExt(); 
 
-            // 注册配置
+            // 注册appsetting配置
             builder.Services.AddAllConfigs(builder.Configuration);
+
+            // 注册 MediatR
+            builder.Services.AddMediatR(); 
 
             //注册数据库连接服务
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -88,6 +94,11 @@ namespace Ly_WebApi
 
             // 注册后台定时任务服务
             builder.Services.AddHostedService<TimedBackgroundTask>();
+
+            // 注册配置文件监控服务
+            builder.Services.AddHostedService<TaskConfigMonitor>();
+
+            builder.Services.AddSingleton(Channel.CreateUnbounded<TaskControlCommand>());
             #endregion
 
 

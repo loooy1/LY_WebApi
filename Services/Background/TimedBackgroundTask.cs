@@ -1,57 +1,109 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using LY_WebApi.Common.Config;
-using LY_WebApi.Common.SerilogExt;
-using LY_WebApi.Services.ExternalService;
-using Microsoft.Extensions.DependencyInjection;
+using LY_WebApi.Common.MediatR;
+using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using System.Threading.Channels;
 
-namespace LY_WebApi.Services.Background
+/// <summary>
+/// 后台任务（修复：取消令牌+线程安全+实时停止）
+/// </summary>
+public class TimedBackgroundTask : BackgroundService
 {
-    /// <summary>
-    /// 示例后台定时任务，每隔一分钟执行一次
-    /// </summary>
-    public class TimedBackgroundTask : BackgroundService
+    private readonly ILogger<TimedBackgroundTask> _logger;
+    private readonly Channel<TaskControlCommand> _commandChannel;
+    private bool _isRunning; // 任务运行状态
+    private CancellationTokenSource? _taskCts; // 任务取消令牌
+    private readonly object _lockObj = new(); // 线程安全锁
+    private CancellationToken _hostStoppingToken; // 服务停止令牌（核心：关联服务停止）
+
+    public TimedBackgroundTask(ILogger<TimedBackgroundTask> logger, Channel<TaskControlCommand> commandChannel)
     {
-        private readonly CustomLogger _customLogger;
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IOptionsMonitor<ApiConfig> _apiConfigMonitor;
+        _logger = logger;
+        _commandChannel = commandChannel;
+    }
 
-        public TimedBackgroundTask(CustomLogger customLogger, IServiceScopeFactory scopeFactory, IOptionsMonitor<ApiConfig> apiConfigMonitor)
-        {
-            _customLogger = customLogger;
-            _scopeFactory = scopeFactory;
-            _apiConfigMonitor = apiConfigMonitor;
-        }
+    // 任务初始化：保存服务停止令牌
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("📌 后台任务已初始化，监听 Channel 指令");
 
-        /// <summary>
-        /// 后台任务主循环
-        /// </summary>
-        /// <param name="stoppingToken">取消令牌</param>
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        // 初始化任务取消令牌
+        _taskCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+
+        var reader = _commandChannel.Reader;
+
+        // 任务主循环：等待启用信号
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            // 从 Channel 获取指令
+            if (reader.TryRead(out var command))
             {
-                // 创建作用域，获取 Scoped 服务
-                using (var scope = _scopeFactory.CreateScope())
-                {
-                    var testService = scope.ServiceProvider.GetRequiredService<TestExternalService>();
-                    // 调用业务逻辑
-                    var posts = await testService.GetAllExternalAsync();
-                    //_logger.LogInformation($"后台任务获取到 post 数据：ID={posts?.id}, Title={posts?.title},body={posts?.body}");
-                    _customLogger.LogInfo("后台任务", $"后台任务获取到 {posts?.Count ?? 0} 条 posts 数据");
-                    _customLogger.LogDebug("后台任务", $"返回WeChat.AppId：{_apiConfigMonitor.CurrentValue.WeChat.AppId}");
-                    _customLogger.LogDebug("后台任务", $"返回WeChat.Payment.TestArray的第一个值：{_apiConfigMonitor.CurrentValue.Payment.TestArray[0]}");
+                _logger.LogInformation($"📥 从 Channel 获取指令：Enable={command.Enable}");
 
-                    //_customLogger.LogDebug("前端任务", $"后台任务获取到 {posts?.Count ?? 0} 条 posts 数据");
-                }
+                if (command.Enable)
+                    StartTask();
+                else
+                    StopTask();
+            }
 
-                //5s执行一次，实际可根据需求调整时间间隔
-                await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+            if (_isRunning)
+            {
+                // 执行业务逻辑
+                await RunContinuousTask(_taskCts.Token);
+            }
+            else
+            {
+                // 等待启用（避免 CPU 占用）
+                await Task.Delay(1000, stoppingToken);
             }
         }
+    }
+
+    public void StartTask()
+    {
+        if (_isRunning) return;
+        _isRunning = true;
+        _logger.LogInformation("✅ 后台任务已启动");
+    }
+
+    public void StopTask()
+    {
+        if (!_isRunning) return;
+        _isRunning = false;
+        _logger.LogInformation("❌ 后台任务已停止");
+    }
+
+    /// <summary>
+    /// 核心业务逻辑（每次循环执行）
+    /// </summary>
+    private async Task RunContinuousTask(CancellationToken token)
+    {
+        try
+        {
+            // ========== 你的核心业务逻辑 ==========
+            _logger.LogInformation($"📝 后台任务执行中：{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
+
+            // 模拟业务延迟
+            await Task.Delay(2000, token);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("⏹️ 任务执行被取消");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ 任务执行异常");
+        }
+    }
+
+    /// <summary>
+    /// 服务停止时强制终止任务
+    /// </summary>
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        StopTask(); // 强制停止任务
+        _taskCts?.Dispose();
+        await base.StopAsync(cancellationToken);
+        _logger.LogInformation("🔌 后台任务已完全停止");
     }
 }

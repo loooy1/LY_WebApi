@@ -358,6 +358,22 @@ swagger用于可视化接口信息 在线调试 版本控制
     本地调试时，默认就是Development，在项目的launchSettings.json文件中配置
     部署到服务器时，通过环境变量ASPNETCORE_ENVIRONMENT=Production配置，项目会自动识别
 
+5. try-catch的重要性？
+    ```
+    try-catch用于捕获代码执行过程中可能发生的异常，防止程序崩溃。
+
+6. using语句的作用？
+    ```
+    using语句用于引入命名空间；
+    using语句可以创建一个代码块，在代码块结束时自动调用IDisposable接口的Dispose方法，释放资源。
+    using (var scope = _scopeFactory.CreateScope()) // 创建作用域
+    {
+            // 使用 scope
+    var service = scope.ServiceProvider.GetRequiredService<SomeService>();
+    }       // 自动调用 scope.Dispose()，释放资源
+
+
+
 </details>
 
 

@@ -41,7 +41,7 @@ namespace LY_WebApi.Common.SerilogExt
                         encoding: Encoding.UTF8))
                 // 前端任务日志
                 .WriteTo.Conditional(e => e.Properties.ContainsKey("Folder") && ((ScalarValue)e.Properties["Folder"]).Value.ToString() == "前端任务",
-                    wt => wt.File("Logs/前端任务/log-.txt",
+                    wt => wt.File("Logs/MediatR测试/log-.txt",
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: logTemplate,
                         retainedFileCountLimit: 30,
