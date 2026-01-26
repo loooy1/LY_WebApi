@@ -185,12 +185,11 @@ swagger用于可视化接口信息 在线调试 版本控制
         }
 
     3. 定义 处理器 类，可以实现对应指令类的接口，就会只处理对应的请求
+        可以注入其他服务/类来处理请求逻辑
+
         (普通类，继承两个接口并实现对应的Handle方法)
         public class Test : INotificationHandler<TaskControlEvent>, IRequestHandler<TaskControlCommand, Unit>
-        
-       （后台程序类，继承两个接口并实现对应的Handle方法）
-        public class TimedBackgroundTask : BackgroundService, INotificationHandler<TaskControlEvent>, IRequestHandler<TaskControlCommand, Unit>
-    
+       
     4.绑定请求和处理程序
         MediatR会自动扫描程序集，绑定请求和处理程序，无需手动注册（默认瞬态生命周期，可以手动注册为单例）
 
@@ -487,6 +486,6 @@ swagger用于可视化接口信息 在线调试 版本控制
         
         
 
-    TODO:
+    TODO:github提交代码不增加小绿点
         
 </details>
