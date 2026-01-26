@@ -1,8 +1,11 @@
 // 仅保留必需命名空间
-using Serilog;
-using Serilog.Events;
-using Serilog.Context;
+using System;
+using System.IO;
 using System.Text;
+using Serilog;
+using Serilog.Context;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace LY_WebApi.Common.SerilogExt
 {
@@ -16,11 +19,25 @@ namespace LY_WebApi.Common.SerilogExt
         /// </summary>
         public static void ConfigureSerilogExt(this WebApplicationBuilder builder)
         {
+            // 启用 SelfLog（排查 Serilog 内部错误）
+            Serilog.Debugging.SelfLog.Enable(msg =>
+            {
+                try
+                {
+                    File.AppendAllText("serilog-selflog.txt", $"{DateTime.Now:O} {msg}{Environment.NewLine}");
+                }
+                catch (Exception ex)
+                {
+                    // 使用项目自定义的线程安全控制台打印，避免与其它控制台输出冲突
+                    GeneralMethod.PrintError($"Serilog SelfLog 写入失败: {ex.Message}. 原始SelfLog: {msg}");
+                }
+            });
+
             // 简化日志模板（去掉 SourceContext）
             var logTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] " +
                               "[{Level:u3}] " +
                               "[应用:{Application}] " +  // 应用名
-                              "{Message:lj}{NewLine}{Exception:Detailed}{NewLine}";
+                              "{Message:lj}{NewLine}{Exception:Detailed}";
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -30,37 +47,45 @@ namespace LY_WebApi.Common.SerilogExt
                 .MinimumLevel.Override("System.Net.Http", LogEventLevel.Error)
                 .MinimumLevel.Override("System", LogEventLevel.Error)
                 .Enrich.WithProperty("Application", "LY_WebApi") // 应用名
-                // 控制台输出
-                .WriteTo.Console(outputTemplate: logTemplate)
-                // 后台任务日志
-                .WriteTo.Conditional(e => e.Properties.ContainsKey("Folder") && ((ScalarValue)e.Properties["Folder"]).Value.ToString() == "后台任务",
+                 // 控制台输出
+                .WriteTo.Sink(new GeneralMethodSink())
+                // 后台任务日志（predicate 改为安全的模式匹配，避免强转异常）
+                .WriteTo.Conditional(e =>
+                    e.Properties.TryGetValue("Folder", out var v) &&
+                    (v is ScalarValue sv && sv.Value?.ToString() == "后台任务"),
                     wt => wt.File("Logs/后台任务/log-.txt",
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: logTemplate,
                         retainedFileCountLimit: 30,
                         encoding: Encoding.UTF8))
                 // 前端任务日志
-                .WriteTo.Conditional(e => e.Properties.ContainsKey("Folder") && ((ScalarValue)e.Properties["Folder"]).Value.ToString() == "前端任务",
-                    wt => wt.File("Logs/MediatR测试/log-.txt",
+                .WriteTo.Conditional(e =>
+                    e.Properties.TryGetValue("Folder", out var v) &&
+                    (v is ScalarValue sv2 && sv2.Value?.ToString() == "MediatR"),
+                    wt => wt.File("Logs/MediatR/log-.txt",
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: logTemplate,
                         retainedFileCountLimit: 30,
                         encoding: Encoding.UTF8))
                 // 数据库操作日志
-                .WriteTo.Conditional(e => e.Properties.ContainsKey("Folder") && ((ScalarValue)e.Properties["Folder"]).Value.ToString() == "数据库操作",
-                    wt => wt.File("Logs/数据库操作/log-.txt",
+                .WriteTo.Conditional(e =>
+                    e.Properties.TryGetValue("Folder", out var v) &&
+                    (v is ScalarValue sv3 && sv3.Value?.ToString() == "TestTask"),
+                    wt => wt.File("Logs/TestTask/log-.txt",
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: logTemplate,
                         retainedFileCountLimit: 30,
                         encoding: Encoding.UTF8))
                 // API调用日志
-                .WriteTo.Conditional(e => e.Properties.ContainsKey("Folder") && ((ScalarValue)e.Properties["Folder"]).Value.ToString() == "API调用",
+                .WriteTo.Conditional(e =>
+                    e.Properties.TryGetValue("Folder", out var v) &&
+                    (v is ScalarValue sv4 && sv4.Value?.ToString() == "API调用"),
                     wt => wt.File("Logs/API调用/log-.txt",
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: logTemplate,
                         retainedFileCountLimit: 30,
                         encoding: Encoding.UTF8))
-                // 默认日志
+                // 默认日志（当没有 Folder 属性时写默认）
                 .WriteTo.Conditional(e => !e.Properties.ContainsKey("Folder"),
                     wt => wt.File("Logs/default/log-.txt",
                         rollingInterval: RollingInterval.Day,
@@ -105,11 +130,10 @@ namespace LY_WebApi.Common.SerilogExt
         /// </summary>
         public void LogError(string folder, Exception ex, string message, string userId = "", params object[] args)
         {
-            using (LogContext.PushProperty("Folder", folder))
-            using (LogContext.PushProperty("UserId", userId))
-            {
-                Log.Error(ex, message, args);
-            }
+            // 使用 ForContext 写入，确保属性随该日志事件一起发送到 sinks
+            Log.ForContext("Folder", folder)
+               .ForContext("UserId", userId)
+               .Error(ex, message, args);
         }
 
         /// <summary>
@@ -121,15 +145,80 @@ namespace LY_WebApi.Common.SerilogExt
         }
 
         /// <summary>
-        /// 核心方法：写入指定文件夹
+        /// 核心方法：写入指定文件夹（使用 ForContext，避免作用域/线程问题）
         /// </summary>
         private void WriteLogToFolder(string folder, LogEventLevel level, string message, string userId = "", params object[] args)
         {
-            using (LogContext.PushProperty("Folder", folder))
-            using (LogContext.PushProperty("UserId", userId))
+            // 采用 ForContext 绑定属性到这个写入调用，可靠且线程/异步安全
+            var logger = Log.ForContext("Folder", folder).ForContext("UserId", userId);
+            logger.Write(level, message, args);
+        }
+    }
+
+    /// <summary>
+    /// 自定义 Serilog sink：把日志通过 GeneralMethod 打印到控制台（线程安全、一致格式）
+    /// </summary>
+    internal class GeneralMethodSink : ILogEventSink, IDisposable
+    {
+        private readonly IFormatProvider? _formatProvider;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="formatProvider">_formatProvider 用来控制日志消息中参数（数字、日期、货币等）
+        /// 的区域性/格式化行为</param>
+        public GeneralMethodSink(IFormatProvider? formatProvider = null)
+        {
+            _formatProvider = formatProvider;
+        }
+
+        /// <summary>
+        /// 日志事件处理
+        /// </summary>
+        /// <param name="logEvent"></param>
+        public void Emit(LogEvent logEvent)
+        {
+            if (logEvent == null) return;
+
+            // Render message (包含模板渲染的参数)
+            string message;
+            try
             {
-                Log.Write(level, message, args);
+                message = logEvent.RenderMessage(_formatProvider);
             }
+            catch
+            {
+                // 回退到简单拼接
+                message = logEvent.MessageTemplate?.Text ?? string.Empty;
+            }
+
+            // 包含异常信息（若有）
+            if (logEvent.Exception != null)
+            {
+                message = $"{message} | Exception: {logEvent.Exception}";
+            }
+
+            // 把格式化好的信息交给 GeneralMethod，按级别选择打印方法
+            switch (logEvent.Level)
+            {
+                case LogEventLevel.Error:
+                    GeneralMethod.PrintError($"{message}");
+                    break;
+                case LogEventLevel.Warning:
+                    GeneralMethod.PrintWarning($"{message}");
+                    break;
+                case LogEventLevel.Information:
+                    GeneralMethod.PrintInfo($"{message}");
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            // nothing to dispose for now
         }
     }
 }

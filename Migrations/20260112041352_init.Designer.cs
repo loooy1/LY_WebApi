@@ -13,7 +13,7 @@ namespace LY_WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260112041352_init")]
-    partial class init
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

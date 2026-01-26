@@ -1,22 +1,25 @@
-﻿using System.Reflection;
+﻿global using LY_WebApi.Common; // 全局引用Common文件夹
+using System.Reflection;
 using System.Threading.Channels;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
-using LY_WebApi.Common;
 using LY_WebApi.Common.AppsettingConfig;
 using LY_WebApi.Common.MediatR;
 using LY_WebApi.Common.SerilogExt;
 using LY_WebApi.Common.SwaggerExtension;
 using LY_WebApi.Data;
-using LY_WebApi.MiddleWare;
+using LY_WebApi.Middleware;
 using LY_WebApi.Repository;
 using LY_WebApi.Services;
 using LY_WebApi.Services.Background;
+using LY_WebApi.Services.Background.Interface;
 using LY_WebApi.Services.ExternalService;
 using LY_WebApi.Services.ExternalService.ExternalServiceBase;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Serilog;
+
 
 namespace Ly_WebApi
 {
@@ -47,7 +50,7 @@ namespace Ly_WebApi
             builder.Services.AddAllConfigs(builder.Configuration);
 
             // 注册 MediatR
-            builder.Services.AddMediatR(); 
+            builder.Services.AddCustomMediatR();
 
             //注册数据库连接服务
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -92,15 +95,24 @@ namespace Ly_WebApi
             builder.Services.AddKeyedScoped<IBaseService, HttpService<object>>("Http");
             //可增加其他协议实现类
 
-            // 注册后台定时任务服务
-            builder.Services.AddHostedService<TimedBackgroundTask>();
+            #region 后台任务服务注册
 
             // 注册配置文件监控服务
-            builder.Services.AddHostedService<TaskConfigMonitor>();
+            builder.Services.AddHostedService<AppsettingConfigMonitor>();
 
-            builder.Services.AddSingleton(Channel.CreateUnbounded<TaskControlCommand>());
+            // 注册测试后台任务服务
+            builder.Services.AddSingleton<TestTask>();
+            builder.Services.AddKeyedSingleton<ITestTaskController>("TestTask", (sp, key) =>
+            {
+                // key 参数就是注册时传入的 "v1"，这里可以不用，但必须接收
+                return sp.GetRequiredService<TestTask>();
+            });
+
+            // 后台任务使用同一实例注册
+            builder.Services.AddHostedService(sp => sp.GetRequiredService<TestTask>());
+
             #endregion
-
+            #endregion
 
 
 
@@ -123,7 +135,6 @@ namespace Ly_WebApi
             app.UseGetIPMiddlewareExt(); //获取客户端IP中间件
             #endregion
 
-            //运行应用程序
             app.Run();
         }
     }

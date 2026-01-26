@@ -23,6 +23,11 @@ namespace LY_WebApi.Controllers
         private readonly ExampleLocalService service;
         private readonly IMapper mapper;
 
+        /// <summary>
+        /// 示例控制器
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="mapper"></param>
         public ExampleController(ExampleLocalService service, IMapper mapper)
         {
             this.service = service;

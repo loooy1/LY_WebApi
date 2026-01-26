@@ -157,6 +157,65 @@ swagger用于可视化接口信息 在线调试 版本控制
 </details>
 
 <details>
+<summary>## MediatR</summary>
+
+1. 什么是MediatR？
+    ```
+    MediatR是一个开源的.NET库，实现了中介者模式(Mediator Pattern)，用于简化应用程序中的对象间通信。
+    它通过将请求和处理程序解耦，使得代码更加模块化、可维护和可测试。
+    MediatR允许你定义请求（命令或查询）和相应的处理程序，而不需要直接引用处理程序，从而减少了类之间的依赖关系。
+    ```
+2. MediatR的使用
+    ```
+    1. 注册MediatR服务
+        自动注册是默认 Transient 瞬态生命周期，想单例的话可以手动注册
+        builder.Services.AddCustomMediatR();
+
+    2. 定义 请求 类，请求类有两种类型：指令(Command)和事件(Event)
+        /// 指令定义 可定义多个，处理器类可以选择性实现对应的指令类接口
+        public class TaskControlCommand : IRequest<Unit>
+        {
+            public bool Enable { get; set; }
+        }
+
+        /// 事件定义（Event/Notification）：用于「发布-订阅」，一对多（一个事件可被多个处理器订阅）
+        public class TaskControlEvent : INotification
+        {
+            public bool Enable { get; set; }
+        }
+
+    3. 定义 处理器 类，可以实现对应指令类的接口，就会只处理对应的请求
+        (普通类，继承两个接口并实现对应的Handle方法)
+        public class Test : INotificationHandler<TaskControlEvent>, IRequestHandler<TaskControlCommand, Unit>
+        
+       （后台程序类，继承两个接口并实现对应的Handle方法）
+        public class TimedBackgroundTask : BackgroundService, INotificationHandler<TaskControlEvent>, IRequestHandler<TaskControlCommand, Unit>
+    
+    4.绑定请求和处理程序
+        MediatR会自动扫描程序集，绑定请求和处理程序，无需手动注册（默认瞬态生命周期，可以手动注册为单例）
+
+    5.发送请求
+    // 注入IMediator
+        private readonly IMediator _mediator;
+        public ShirtsController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+        // 发送指令请求
+        await _mediator.Send(new TaskControlCommand { Enable = true });
+        // 发布事件请求
+        await _mediator.Publish(new TaskControlEvent { Enable = true });
+
+    6. 处理请求
+        (在处理器类中实现对应的Handle方法，处理请求逻辑)
+
+    7. 运行应用程序
+        (MediatR会根据发送的请求，自动调用对应的处理程序，完成请求处理逻辑)
+    ```
+</details>
+
+
+<details>
 <summary>## 中间件</summary>
 
 1. 什么是中间件？
@@ -292,7 +351,7 @@ swagger用于可视化接口信息 在线调试 版本控制
 <summary>## 架构_分层</summary>
 
 ```
-控制器层(controller) ----> 业务层(services)  ----> 仓储层(Repository) 
+控制器层(controller) ---->应用层(application)  ----> 业务层(services)  ----> 仓储层(Repository) 
 ----> 数据访问层(appContext) ----> 数据库(Mysql)
 
 ```
@@ -372,6 +431,20 @@ swagger用于可视化接口信息 在线调试 版本控制
     var service = scope.ServiceProvider.GetRequiredService<SomeService>();
     }       // 自动调用 scope.Dispose()，释放资源
 
+7. 键控注册服务
+    ```
+    //注册
+    builder.Services.AddTransient<IService, ServiceA>("ServiceA");
+    builder.Services.AddTransient<IService, ServiceB>("ServiceB");
+    
+    //依赖注入
+    public AppsettingConfigMonitorHandler([FromKeyedServices("ServiceA")] IService taskController)
+    {
+        _taskController = taskController;
+    }
+    ```
+
+
 
 
 </details>
@@ -403,11 +476,17 @@ swagger用于可视化接口信息 在线调试 版本控制
     2. 2026-01-20
         - serilog按需写入文件夹，文件夹为固定命名，可添加(LY_WebApi\Common\SerilogExt)
         - 读取appsetting配置(LY_WebApi\Common\Config\ConfigExtensions.cs)
+    3. 2026-01-25
+        - 根据配置去开启不同的后台任务或者服务（只用MediatR）
+        - MediatR多实例问题解决
+    4. 2026-01-26
+        - 优化MediatR请求处理，添加命令和事件示例
+        - 理解MediatR逻辑,这个最好用于流程控制 而不是用handler去做服务层
 
 
         
         
 
     TODO:
-        - 根据配置去开启不同的后台任务或者服务
+        
 </details>

@@ -8,6 +8,9 @@ namespace LY_WebApi.Common
     /// </summary>
     public class AutoMapperProfile : Profile
     {
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public AutoMapperProfile()
         {
             // 实体类 <-> DTO 映射

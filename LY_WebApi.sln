@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LY_WebApi", "LY_WebApi.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LY_console_Test", "类库项目\LY_WebAPI_Test\LY_console_Test.csproj", "{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "..\WebApplication1\WebApplication1.csproj", "{02960AEE-5584-4434-B2FD-0D18287DD7B8}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02960AEE-5584-4434-B2FD-0D18287DD7B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02960AEE-5584-4434-B2FD-0D18287DD7B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02960AEE-5584-4434-B2FD-0D18287DD7B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02960AEE-5584-4434-B2FD-0D18287DD7B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿namespace LY_WebApi.MiddleWare
+﻿namespace LY_WebApi.Middleware
 {
     /// <summary>
     /// 静态类  作为扩展方法的容器

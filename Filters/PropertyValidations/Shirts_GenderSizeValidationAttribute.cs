@@ -10,9 +10,9 @@ public class Shirts_GenderSizeValidationAttribute : ValidationAttribute
 {
 
     /// <summary>
-    // 核心重写方法：框架会调用这个方法执行校验逻辑
-    // 参数1：value → 特性贴在哪个属性上，这个值就是该属性的当前值（⚠️ 注意这个参数的坑）
-    // 参数2：validationContext → 校验上下文，包含整个模型实例、属性信息等核心数据
+    /// 核心重写方法：框架会调用这个方法执行校验逻辑
+    /// 参数1：value → 特性贴在哪个属性上，这个值就是该属性的当前值（⚠️ 注意这个参数的坑）
+    /// 参数2：validationContext → 校验上下文，包含整个模型实例、属性信息等核心数据
     /// </summary>
     /// <param name="value"></param>
     /// <param name="validationContext"></param>

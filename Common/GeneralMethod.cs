@@ -1,44 +1,64 @@
-﻿namespace LY_WebApi.Common
+﻿using System;
+using System.Threading;
+
+namespace LY_WebApi.Common
 {
     /// <summary>
     /// 通用方法
     /// </summary>
-    public class GeneralMethod
+    public static class GeneralMethod
     {
+        // 控制台输出锁，保证不同线程输出不交错
+        private static readonly object _consoleLock = new();
+
         /// <summary>
-        /// 重置控制台的字体+背景为系统默认颜色
+        /// 重置控制台的字体+背景为系统默认颜色（线程安全）
         /// </summary>
         public static void ResetConsoleColor()
+        {
+            lock (_consoleLock)
+            {
+                ResetConsoleColorInternal();
+            }
+        }
+
+        // 内部不加锁的重置函数，供在已持有锁的上下文中调用，避免死锁
+        private static void ResetConsoleColorInternal()
         {
             Console.ForegroundColor = ConsoleColor.Gray;  // 控制台默认字体色
             Console.BackgroundColor = ConsoleColor.Black; // 控制台默认背景色
         }
 
         /// <summary>
-        /// 自定义字体颜色打印内容【常用，推荐】
+        /// 自定义字体颜色打印内容（线程安全）
         /// </summary>
         /// <param name="msg">要打印的内容</param>
         /// <param name="fontColor">字体颜色</param>
         /// <param name="isLine">是否换行打印，true=换行(WriteLine)，false=不换行(Write)</param>
-        public static void ConsoleWriteColor(string msg, ConsoleColor fontColor, bool isLine = true)
+        private static void ConsoleWriteColor(string msg, ConsoleColor fontColor, bool isLine = true)
         {
-            try
+            // 加锁保证同一时间只有一个线程操作控制台颜色和写入，避免颜色/输出混淆
+            lock (_consoleLock)
             {
-                // 设置字体颜色
-                Console.ForegroundColor = fontColor;
-                if (isLine)
+                try
                 {
-                    Console.WriteLine(msg);
+                    // 输出时附加线程ID和时间，便于排查并发问题
+                    var prefix = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [线程:{Thread.CurrentThread.ManagedThreadId}] ";
+                    Console.ForegroundColor = fontColor;
+                    if (isLine)
+                    {
+                        Console.WriteLine(prefix + msg);
+                    }
+                    else
+                    {
+                        Console.Write(prefix + msg);
+                    }
                 }
-                else
+                finally
                 {
-                    Console.Write(msg);
+                    // 在持有锁的情况下恢复颜色（使用内部方法避免再次竞争锁）
+                    ResetConsoleColorInternal();
                 }
-            }
-            finally
-            {
-                // 无论是否异常，都重置颜色，核心保证！
-                ResetConsoleColor();
             }
         }
 
@@ -46,9 +66,9 @@
         /// 打印【成功日志】 绿色字体
         /// </summary>
         /// <param name="msg">成功信息</param>
-        public static void PrintSuccess(string msg)
+        public static void PrintInfo(string msg)
         {
-            ConsoleWriteColor($"[Success]：{msg}", ConsoleColor.Green);
+            ConsoleWriteColor($"[Info]：{msg}", ConsoleColor.Green);
         }
 
         /// <summary>
@@ -68,6 +88,5 @@
         {
             ConsoleWriteColor($"[Warning]：{msg}", ConsoleColor.Yellow);
         }
-
     }
 }
