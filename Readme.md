@@ -206,7 +206,7 @@ swagger用于可视化接口信息 在线调试 版本控制
         await _mediator.Publish(new TaskControlEvent { Enable = true });
 
     6. 处理请求
-        (在处理器类中实现对应的Handle方法，处理请求逻辑)
+        (在处理器类中实现对应的Handle方法，注入服务层逻辑，处理请求逻辑)
 
     7. 运行应用程序
         (MediatR会根据发送的请求，自动调用对应的处理程序，完成请求处理逻辑)
@@ -480,12 +480,13 @@ swagger用于可视化接口信息 在线调试 版本控制
         - MediatR多实例问题解决
     4. 2026-01-26
         - 优化MediatR请求处理，添加命令和事件示例
-        - 理解MediatR逻辑,这个最好用于流程控制 而不是用handler去做服务层 
+        - 理解MediatR逻辑,这个最好用于流程控制 依赖注入之后用handler去控制服务层，而不是用handler去做服务层 
+        - github提交代码不增加小绿点,需要邮箱一致
 
 
         
         
 
-    TODO:github提交代码不增加小绿点,测试邮箱更新
+    TODO:
         
 </details>

@@ -36,13 +36,21 @@ namespace LY_WebApi.Services.Background
         }
 
         /// <summary>
+        /// ITestTaskController 实现 —— 运行标志
+        /// </summary>
+        public bool IsRunning
+        {
+            get { return _isRunning; }
+        }
+
+        /// <summary>
         /// BackgroundService 的执行循环：读取控制器状态并执行业务
         /// </summary>
         /// <param name="stoppingToken"></param>
         /// <returns></returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInfo("TestTask", "ExecuteAsync started");
+            _logger.LogInfo("TestTask", "TestTask服务 ExecuteAsync开始执行");
             _hostStoppingToken = stoppingToken;
 
             // 根据配置初始化运行状态（可选）
@@ -51,15 +59,17 @@ namespace LY_WebApi.Services.Background
             {
                 Start(stoppingToken);
             }
-
+            _logger.LogWarn("TestTask", $"TestTask服务 业务功能默认{(initial.IsEnabled ? "已开启" : "未开启")}");
+            // 主循环
             while (!stoppingToken.IsCancellationRequested)
             {
                 if (IsRunning)
                 {
+                    // 获取当前运行的取消令牌
                     var runToken = GetRunToken();
                     try
                     {
-                        _logger.LogInfo("TestTask", $"业务执行中（实例 {GetHashCode()}）");
+                        _logger.LogInfo("TestTask", $"业务执行中,需要2s （实例 {GetHashCode()}）");
                         // 示例工作：用可取消的 token 等待或执行你的任务逻辑
                         await Task.Delay(2000, CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, runToken).Token);
                     }
@@ -78,11 +88,11 @@ namespace LY_WebApi.Services.Background
                 }
             }
 
-            _logger.LogInfo("TestTask", "ExecuteAsync exiting");
+            _logger.LogInfo("TestTask", "后台循环任务未被执行");
         }
 
         /// <summary>
-        /// 停止时调用，触发控制接口的 Stop 方法
+        /// 停止时调用，后台循环任务重写的 StopAsync
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -92,6 +102,7 @@ namespace LY_WebApi.Services.Background
             await StopAsync().ConfigureAwait(false);
             await base.StopAsync(cancellationToken).ConfigureAwait(false);
         }
+        #region 本地私有方法
 
         /// <summary>
         /// ITestTaskController 实现 —— 线程安全管理 CTS 与运行标志
@@ -103,7 +114,7 @@ namespace LY_WebApi.Services.Background
             {
                 if (_isRunning)
                 {
-                    _logger.LogWarn("TestTask", "Start 被调用但任务已在运行");
+                    _logger.LogWarn("TestTask", "Start 被调用但TestTask服务(后台任务)已在运行");
                     return;
                 }
 
@@ -111,7 +122,7 @@ namespace LY_WebApi.Services.Background
                 var hostToken = hostCancellation != default ? hostCancellation : _hostStoppingToken;
                 _taskCts = CancellationTokenSource.CreateLinkedTokenSource(hostToken);
                 _isRunning = true;
-                _logger.LogInfo("TestTask", "任务已启动（来自控制接口）");
+                _logger.LogInfo("TestTask", "TestTask服务已启动(后台任务)");
             }
         }
 
@@ -125,7 +136,7 @@ namespace LY_WebApi.Services.Background
             {
                 if (!_isRunning)
                 {
-                    _logger.LogWarn("TestTask", "Stop 被调用但任务已是停止状态");
+                    _logger.LogWarn("TestTask", "Stop 被调用但TestTask服务(后台任务)已是停止状态");
                     return;
                 }
 
@@ -140,19 +151,10 @@ namespace LY_WebApi.Services.Background
                     _taskCts?.Dispose();
                     _taskCts = null;
                 }
-
-                _logger.LogInfo("TestTask", "任务已停止（来自控制接口）");
+                _logger.LogInfo("TestTask", "TestTask服务已停止(后台任务)");
             }
 
             await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// ITestTaskController 实现 —— 运行标志
-        /// </summary>
-        public bool IsRunning
-        {
-            get { return _isRunning; }
         }
 
         /// <summary>
@@ -166,5 +168,7 @@ namespace LY_WebApi.Services.Background
                 return _taskCts?.Token ?? CancellationToken.None;
             }
         }
+
+        #endregion
     }
 }

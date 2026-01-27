@@ -32,8 +32,7 @@ namespace LY_WebApi.Common.AppsettingConfig
         }
     }
 
-
-
+    #region ApiConfig
     /// <summary>
     /// 主配置类（对应 appsettings 的 ApiConfig 节点）
     /// </summary>
@@ -86,7 +85,9 @@ namespace LY_WebApi.Common.AppsettingConfig
         /// </summary>
         public List<string> TestArray { get; set; } = new List<string>();
     }
+    #endregion
 
+    #region BackgroundTaskConfig
     /// <summary>
     /// 后台任务配置类
     /// </summary>
@@ -102,4 +103,6 @@ namespace LY_WebApi.Common.AppsettingConfig
         /// </summary>
         public int IntervalSeconds { get; set; }
     }
+    #endregion
+
 }

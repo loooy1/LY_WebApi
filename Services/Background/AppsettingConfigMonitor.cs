@@ -39,8 +39,8 @@ namespace LY_WebApi.Services.Background
         {
             try
             {
-                // 1. 启动时同步初始配置（带异常捕获）
-                await SyncInitialConfig(stoppingToken);
+                // 1. 启动时获取初始配置
+                _lastConfigState= _config.CurrentValue.IsEnabled;
 
                 // 2. 改用IOptionsMonitor的回调监听配置变更
                 _config.OnChange(async (newConfig) =>
@@ -50,7 +50,7 @@ namespace LY_WebApi.Services.Background
                     {
                         await SendTaskControlCommand(newConfig.IsEnabled, stoppingToken);
                         _lastConfigState = newConfig.IsEnabled;
-                        _logger.LogInfo("MediatR", $"配置变更触发指令发送：IsEnabled={newConfig.IsEnabled}");
+                        _logger.LogInfo("MediatR", $"配置变更触发指令发送完毕：IsEnabled={newConfig.IsEnabled}");
                     }
                 });
 
@@ -76,21 +76,6 @@ namespace LY_WebApi.Services.Background
         #region 私有方法
 
         /// <summary>
-        /// 同步初始配置
-        /// </summary>
-        private async Task SyncInitialConfig(CancellationToken stoppingToken)
-        {
-            // 关键：延迟1秒，确保处理器（TimedBackgroundTask）已实例化
-            _logger.LogInfo("MediatR", "发送器延迟1秒，确保处理器就绪...");
-            await Task.Delay(1000, stoppingToken);
-
-            var initialConfig = _config.CurrentValue;
-            _lastConfigState = initialConfig.IsEnabled;
-            await SendTaskControlCommand(initialConfig.IsEnabled, stoppingToken);
-            _logger.LogInfo("MediatR", $"初始配置同步完成：IsEnabled={initialConfig.IsEnabled}");
-        }
-
-        /// <summary>
         /// 发送MediatR指令（带异常捕获，避免单次失败影响整体）
         /// </summary>
         private async Task SendTaskControlCommand(bool enable, CancellationToken stoppingToken)
@@ -101,7 +86,7 @@ namespace LY_WebApi.Services.Background
                 //await _mediator.Send(new TaskControlCommand { Enable = enable }, stoppingToken);
                 // 发布事件
                 await _mediator.Publish(new TaskControlEvent { Enable = enable }, stoppingToken);
-                _logger.LogInfo("MediatR", $"MediatR事件发送成功：Enable={enable}");
+                _logger.LogInfo("MediatR", $"MediatR事件发送完毕：Enable={enable}");
             }
             catch (Exception ex)
             {

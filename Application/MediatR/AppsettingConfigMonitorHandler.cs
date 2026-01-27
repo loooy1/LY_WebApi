@@ -38,7 +38,7 @@ namespace LY_WebApi.Application
     public class AppsettingConfigMonitorHandler : IRequestHandler<TaskControlCommand, Unit>, INotificationHandler<TaskControlEvent>
     {
         // 日志记录器
-        private readonly CustomLogger _logger;
+        private readonly CustomLogger _log;
 
         // 业务后台任务
         private readonly ITestTaskController _taskController;
@@ -46,9 +46,9 @@ namespace LY_WebApi.Application
         /// <summary>
         /// 构造函数
         /// </summary>
-        public AppsettingConfigMonitorHandler(CustomLogger logger, [FromKeyedServices("TestTask")] ITestTaskController taskController)
+        public AppsettingConfigMonitorHandler(CustomLogger log, [FromKeyedServices("TestTask")] ITestTaskController taskController)
         {
-            _logger = logger;
+            _log = log;
             _taskController = taskController;
         }
 
@@ -65,7 +65,7 @@ namespace LY_WebApi.Application
         }
 
         /// <summary>
-        /// 处理 Event
+        /// 处理 Event 去控制实际逻辑
         /// </summary>
         /// <param name="notification"></param>
         /// <param name="cancellationToken"></param>
@@ -73,10 +73,13 @@ namespace LY_WebApi.Application
         /// <exception cref="NotImplementedException"></exception>
         public Task Handle(TaskControlEvent notification, CancellationToken cancellationToken)
         {
-            if (notification.Enable) _taskController.Start(cancellationToken);
-            else _taskController.StopAsync().GetAwaiter().GetResult();
+            _log.LogWarn("MediatR", $"MediatR_Handler处理器已收到广播，后台任务已{(notification.Enable ? "启用" : "禁用")}，准备下发给服务层");
 
-            GeneralMethod.PrintInfo($"后台任务已{(notification.Enable ? "启用" : "禁用")}（Event）");
+            if (notification.Enable) 
+                _taskController.Start(cancellationToken);
+            else 
+                _taskController.StopAsync().GetAwaiter().GetResult();
+
             return Task.CompletedTask;
         }
 
