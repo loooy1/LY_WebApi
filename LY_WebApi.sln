@@ -5,8 +5,6 @@ VisualStudioVersion = 18.3.11312.210
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LY_WebApi", "LY_WebApi.csproj", "{B845615F-FD1E-4A74-8057-A276A7BAF948}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LY_console_Test", "类库项目\LY_WebAPI_Test\LY_console_Test.csproj", "{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{B845615F-FD1E-4A74-8057-A276A7BAF948}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B845615F-FD1E-4A74-8057-A276A7BAF948}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B845615F-FD1E-4A74-8057-A276A7BAF948}.Release|Any CPU.Build.0 = Release|Any CPU
-		{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08163CE8-FA91-4A8D-92DD-CA7D19A13E93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
