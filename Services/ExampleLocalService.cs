@@ -46,16 +46,22 @@ namespace LY_WebApi.Services
         /// </summary>
         public async Task<ShirtDto> UpdateAsync(ShirtDto dto)
         {
-            var entity = _mapper.Map<Shirts>(dto);
-            // 查询数据库原始数据，保留未在DTO中的字段
-            var dbEntity = await _localService.GetByIdAsync(entity.Id);
+            // 1. 先查数据库，获取【被跟踪的原始实体】（核心！）
+            var dbEntity = await _localService.GetByIdAsync(dto.Id);
+            if (dbEntity == null)
+                throw new KeyNotFoundException($"未找到 Id={dto.Id} 的衬衫");
 
-            entity.GuidId ??= new Guid("00000000-1111-1111-1111-000000000000");
-            // 其他需要保护的字段也可在此赋值
+            // 2. 把 DTO 映射到【被跟踪的实体】（改这个实体才会触发属性通知）
+            _mapper.Map(dto, dbEntity);
+            dbEntity.GuidId ??= new Guid("00000000-1111-1111-1111-000000000000");
 
-            var result = await _localService.UpdateAsync(entity);
-            return _mapper.Map<ShirtDto>(result);
+            // 3. 调用 UpdateAsync（此时去掉 _db.Update 也能更新，因为 dbEntity 被跟踪+属性通知标记）
+            await _localService.UpdateAsync(dbEntity);
+
+            return _mapper.Map<ShirtDto>(dbEntity);
         }
+
+
 
         /// <summary>
         /// 根据主键获取一条 ShirtDto 数据

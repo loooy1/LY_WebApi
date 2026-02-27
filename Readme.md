@@ -1,4 +1,4 @@
-﻿# 此项目为学习Web_API而创建的示例项目。
+# 此项目为学习Web_API而创建的示例项目。
 
 <details>
 <summary>## 理解概念</summary>
@@ -211,6 +211,8 @@ swagger用于可视化接口信息 在线调试 版本控制
     7. 运行应用程序
         (MediatR会根据发送的请求，自动调用对应的处理程序，完成请求处理逻辑)
     ```
+
+    todo：MR的管道行为
 </details>
 
 
@@ -343,6 +345,43 @@ swagger用于可视化接口信息 在线调试 版本控制
     ps2:更新数据库结构的话记得修改数据库的种子数据
     ps3:修改主键的话要麻烦一些，要修改迁移文件(因为efcore会默认删除主键添加修改后的主键)
     ```
+4. 属性通知(性能优化)
+    ```
+    有属性通知：SaveChangesAsync() 直接用 “实时标记的变更”，不扫就更新；
+    无属性通知：SaveChangesAsync() 先 “扫一遍找变更”，再更新；
+
+            public async Task Update(T entity)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity), "修改的实体数据不能为空");
+            }
+            //_db.Set<T>().Update(entity);
+            await _db.SaveChangesAsync();
+        }
+
+        //_db.Set<T>().Update(entity);是强制更新所有字段
+        如果有属性通知的话 await _db.SaveChangesAsync();就可以更新字段到数据库内，性能更高
+
+        属性通知示例：
+         public string? Color
+        {
+            get => _color;
+            set
+            {
+                // 仅值变化时触发通知（避免EF Core无效标记）
+                if (_color != value)
+                {
+                    _color = value;
+                    // 触发PropertyChanged事件，EF Core会实时捕获
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        OnPropertyChanged();要符合EF标准
+    ```
+
 
 </details>
 

@@ -1,5 +1,6 @@
 ﻿using LY_WebApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace LY_WebApi.Data
 {
@@ -42,6 +43,32 @@ namespace LY_WebApi.Data
                 new Shirts() { Id = 5, Brand = "品牌5", Color = "黑", Size = 5, Gender = "男", MyProperty = 54, GuidId = new Guid("00000000-0000-0000-0000-000000000005") },
                 new Shirts() { Id = 6, Brand = "品牌6", Color = "黑", Size = 5, Gender = "男", MyProperty = 55, GuidId = new Guid("00000000-0000-0000-0000-000000000006") }
                 );
+        }
+
+        /// <summary>
+        /// 核心：配置数据库连接 + 开启 SQL 日志  记得在appsetting中更改EF日志级别
+        /// </summary>
+        /// <param name="optionsBuilder"></param>
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // 防止重复配置
+            if (optionsBuilder.IsConfigured) return;
+
+            string connStr = "Server=localhost;Port=3306;Database=WebApi_DB;User=root;Password=123456;CharSet=utf8mb4;SslMode=None;AllowPublicKeyRetrieval=True;";
+
+            // 配置 MySQL 驱动 + 开启 SQL 日志
+            optionsBuilder
+                .UseMySql(
+                    connectionString: connStr,
+                    // 指定 MySQL 服务器版本（根据你的MySQL版本改，比如 8.0/5.7）
+                    serverVersion: new MySqlServerVersion(new Version(8, 0, 30))
+                )
+
+            // 开启 EF Core 日志，输出执行的 SQL 语句（核心！）
+                .LogTo(
+                Console.WriteLine, // 把日志输出到控制台
+                new[] { RelationalEventId.CommandExecuting }// 只输出“执行SQL”相关的日志（过滤无关日志）
+            );
         }
     }
 }

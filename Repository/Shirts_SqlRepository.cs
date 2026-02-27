@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using LY_WebApi.Common.Response;
 using LY_WebApi.Data;
+using LY_WebApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LY_WebApi.Repository
@@ -30,7 +31,8 @@ namespace LY_WebApi.Repository
         public async Task<T> GetById(int id)
         {
             // AsNoTracking() 关闭跟踪，提升查询性能，纯查询场景推荐
-            var res = await _db.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
+            //var res = await _db.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
+            var res = await _db.Set<T>().FirstOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
             if (res == null)
             {
                 throw new KeyNotFoundException($"根据ID：{id}，未查询到对应数据！");
@@ -60,7 +62,7 @@ namespace LY_WebApi.Repository
             {
                 throw new ArgumentNullException(nameof(entity), "修改的实体数据不能为空");
             }
-            _db.Set<T>().Update(entity);
+            //_db.Set<T>().Update(entity);
             await _db.SaveChangesAsync();
         }
 

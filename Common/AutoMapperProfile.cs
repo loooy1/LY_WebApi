@@ -14,8 +14,11 @@ namespace LY_WebApi.Common
         public AutoMapperProfile()
         {
             // 实体类 <-> DTO 映射
-            CreateMap<Shirts, ShirtDto>();
-            CreateMap<ShirtDto, Shirts>();
+            CreateMap<ShirtDto, Shirts>()
+                .ForMember(dest => dest.Color, opt => opt.MapFrom(src => src.Color));
+
+            CreateMap<Shirts, ShirtDto>()
+                .ForMember(dest => dest.Color, opt => opt.MapFrom(src => src.Color));
         }
     }
 }

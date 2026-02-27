@@ -40,10 +40,9 @@ namespace LY_WebApi.Services
         /// <summary>
         /// 更新一条数据
         /// </summary>
-        public async Task<T> UpdateAsync(T entity)
+        public async Task UpdateAsync(T entity)
         {
             await _repository.Update(entity);
-            return entity;
         }
 
         /// <summary>
