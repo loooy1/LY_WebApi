@@ -157,6 +157,12 @@ swagger用于可视化接口信息 在线调试 版本控制
 </details>
 
 <details>
+<summary>## FluentValidation校验器</summary>
+todoly:校验器的实现
+
+</details>
+
+<details>
 <summary>## MediatR</summary>
 
 1. 什么是MediatR？
@@ -210,9 +216,25 @@ swagger用于可视化接口信息 在线调试 版本控制
 
     7. 运行应用程序
         (MediatR会根据发送的请求，自动调用对应的处理程序，完成请求处理逻辑)
-    ```
+    
+    8. MR的管道行为
+        类似于中间件，可以在请求处理前后执行额外逻辑（如日志记录、性能监控等），通过实现IPipelineBehavior<TRequest, TResponse>接口来定义管道行为。
 
-    todo：MR的管道行为
+        //命令管道行为
+        public class AppsettingConfigMonitorBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>where TRequest : IRequest<TResponse>
+        
+        //广播管道行为
+        public class AppsettingConfigMonitorNotificationPublisher : INotificationPublisher
+
+        //注册
+        // 注册命令管道行为
+        cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AppsettingConfigMonitorBehavior<,>));
+
+        // 注册广播管道行为
+        cfg.NotificationPublisherType = typeof(AppsettingConfigMonitorNotificationPublisher);
+
+        通常情况下，管道行为所有请求都会经过，可以在管道行为中根据请求类型或其他条件来决定是否执行特定逻辑，或者直接放行请求到下一个处理程序。
+    ```
 </details>
 
 

@@ -1,4 +1,5 @@
 ﻿using LY_WebApi.Application;
+using LY_WebApi.Application.MediatR.Handler;
 using LY_WebApi.Common.AppsettingConfig;
 using LY_WebApi.Common.SerilogExt;
 using MediatR;
