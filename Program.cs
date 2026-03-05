@@ -97,8 +97,8 @@ namespace Ly_WebApi
 
             #region 后台任务服务注册
 
-            // 注册配置文件监控服务
-            builder.Services.AddHostedService<AppsettingConfigMonitor>();
+            // 根据配置变更发送MediatR通知
+            builder.Services.AddHostedService<MediatR_Send>();
 
             // 注册测试后台任务服务
             builder.Services.AddSingleton<TestTask>();
@@ -110,6 +110,7 @@ namespace Ly_WebApi
 
             // 后台任务使用同一实例注册
             builder.Services.AddHostedService(sp => sp.GetRequiredService<TestTask>());
+            builder.Services.AddHostedService<HotUpdateByIOptionMonitor>();
 
             #endregion
             #endregion

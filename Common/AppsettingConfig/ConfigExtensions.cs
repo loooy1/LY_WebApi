@@ -23,11 +23,9 @@ namespace LY_WebApi.Common.AppsettingConfig
             services.Configure<ApiConfig>(configuration.GetSection("ApiConfig"));
             services.AddSingleton(resolver => resolver.GetRequiredService<IOptionsMonitor<ApiConfig>>().CurrentValue);
 
-            // 注册 DatabaseConfig，支持热更新
+            // 注册 BackgroundTaskConfig，支持热更新
             services.Configure<BackgroundTaskConfig>(configuration.GetSection("BackgroundTask"));
             services.AddSingleton(resolver => resolver.GetRequiredService<IOptionsMonitor<BackgroundTaskConfig>>().CurrentValue);
-
-
             return services;
         }
     }
@@ -97,6 +95,11 @@ namespace LY_WebApi.Common.AppsettingConfig
         /// 任务是否启用
         /// </summary>
         public bool IsEnabled { get; set; }
+
+        /// <summary>
+        /// 任务2是否启用
+        /// </summary>
+        public bool IsEnabled2 { get; set; }
 
         /// <summary>
         /// 任务执行间隔（秒）

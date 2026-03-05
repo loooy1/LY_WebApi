@@ -504,6 +504,22 @@ todoly:校验器的实现
     }
     ```
 
+8.怎么实时获得appsettings.json的配置值？
+    ```
+    1. 使用Options模式，定义配置类，绑定配置节，注入IOptions<T>接口
+    services.Configure<ApiConfig>(configuration.GetSection("ApiConfig"));
+
+    2. 使用IOptionsMonitor配置
+    services.AddSingleton(resolver => resolver.GetRequiredService<IOptionsMonitor<ApiConfig>>().CurrentValue);
+
+    3.注入IOptionsMonitor接口 获取当前配置值
+    private readonly IOptionsMonitor<BackgroundTaskConfig> _config;
+    public AppsettingConfigMonitorHandler(IOptionsMonitor<BackgroundTaskConfig> config)
+    {
+        _config = config;
+    }
+    _config.CurrentValue // 获取当前配置值
+
 
 
 

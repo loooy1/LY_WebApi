@@ -8,9 +8,9 @@ using Microsoft.Extensions.Options;
 namespace LY_WebApi.Services.Background
 {
     /// <summary>
-    /// 独立配置监听服务（负责：监听配置变更 → 发送MediatR启停指令）
+    /// 通过感知配置变更（负责：监听配置变更 → 发送MediatR启停指令）
     /// </summary>
-    public class AppsettingConfigMonitor : BackgroundService
+    public class MediatR_Send : BackgroundService
     {
         private readonly IMediator _mediator;
         private readonly IOptionsMonitor<BackgroundTaskConfig> _config;
@@ -23,7 +23,7 @@ namespace LY_WebApi.Services.Background
         /// <param name="mediator"></param>
         /// <param name="config"></param>
         /// <param name="logger"></param>
-        public AppsettingConfigMonitor(IMediator mediator, IOptionsMonitor<BackgroundTaskConfig> config, CustomLogger logger)
+        public MediatR_Send(IMediator mediator, IOptionsMonitor<BackgroundTaskConfig> config, CustomLogger logger)
         {
             _mediator = mediator;
             _config = config;
@@ -55,7 +55,13 @@ namespace LY_WebApi.Services.Background
                     }
                 });
 
-                // 3. 保持后台服务运行（回调模式下，只需阻塞即可）
+                //3. 初始状态为开启时发送一次指令（确保一致性）
+                if (_lastConfigState) 
+                {
+                await SendTaskControlCommand(_lastConfigState, stoppingToken);
+                }
+
+                // 4. 保持后台服务运行（回调模式下，只需阻塞即可）
                 await Task.Delay(Timeout.Infinite, stoppingToken);
             }
             catch (OperationCanceledException)
