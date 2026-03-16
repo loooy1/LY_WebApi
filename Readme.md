@@ -43,7 +43,7 @@ swagger用于可视化接口信息 在线调试 版本控制
 2. 框架
     ```
     底层框架
-    .NET9.0
+    .NET9.0  跨平台 开源 以前叫.NET Core，2025年改名为.NET，和之前的.NET Framework区分开了
 
     web上层框架
     ASP.NET.Core
@@ -506,13 +506,10 @@ todoly:校验器的实现
 
 8.怎么实时获得appsettings.json的配置值？
     ```
-    1. 使用Options模式，定义配置类，绑定配置节，注入IOptions<T>接口
+    1. 注册配置类并绑定appsettings.json的配置节（1.找到 appsettings.json 中 ApiConfig 这个节点 2.把节点下的 属性 自动赋值给 ApiConfig 类的对应属性 3.自动注册 IOptions<ApiConfig>/IOptionsSnapshot<ApiConfig>/IOptionsMonitor<ApiConfig> 这三个服务）
     services.Configure<ApiConfig>(configuration.GetSection("ApiConfig"));
 
-    2. 使用IOptionsMonitor配置
-    services.AddSingleton(resolver => resolver.GetRequiredService<IOptionsMonitor<ApiConfig>>().CurrentValue);
-
-    3.注入IOptionsMonitor接口 获取当前配置值
+    2.注入IOptionsMonitor接口 获取当前配置值
     private readonly IOptionsMonitor<BackgroundTaskConfig> _config;
     public AppsettingConfigMonitorHandler(IOptionsMonitor<BackgroundTaskConfig> config)
     {
@@ -520,7 +517,21 @@ todoly:校验器的实现
     }
     _config.CurrentValue // 获取当前配置值
 
+    ps：
+    IOptions<T>：一次性读死，程序启动后配置改了也不生效；
+    IOptionsSnapshot<T>：每次拿最新快照，改配置后 “下次用就生效”；
+    IOptionsMonitor<T>：盯着配置实时更，改配置后 “立刻生效” 还能主动通知。
 
+
+9.工厂模式和键控模式
+   ```
+   工厂模式：通过工厂类根据条件创建不同的实例，工厂类负责实例化对象，客户端通过工厂获取实例。
+   键控模式：直接在依赖注入容器中注册多个实现类，并通过键值区分，在需要使用时通过键值获取对应的实例。
+
+   根据负责条件创建实例的话，工厂模式更合适；如果需要在多个地方使用不同的实现类/只根据名字获取实例，键控模式更方便.
+
+10.typeof的用法
+    lytodo
 
 
 </details>

@@ -21,11 +21,10 @@ namespace LY_WebApi.Common.AppsettingConfig
         {
             // 注册 ApiConfig，支持热更新
             services.Configure<ApiConfig>(configuration.GetSection("ApiConfig"));
-            services.AddSingleton(resolver => resolver.GetRequiredService<IOptionsMonitor<ApiConfig>>().CurrentValue);
 
             // 注册 BackgroundTaskConfig，支持热更新
             services.Configure<BackgroundTaskConfig>(configuration.GetSection("BackgroundTask"));
-            services.AddSingleton(resolver => resolver.GetRequiredService<IOptionsMonitor<BackgroundTaskConfig>>().CurrentValue);
+           
             return services;
         }
     }
