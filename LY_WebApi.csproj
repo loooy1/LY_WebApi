@@ -9,13 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="类库项目\**" />
-    <Content Remove="类库项目\**" />
-    <EmbeddedResource Remove="类库项目\**" />
-    <None Remove="类库项目\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include=".github\copilot-instructions.md" />
   </ItemGroup>
 
