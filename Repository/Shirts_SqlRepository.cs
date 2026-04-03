@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using LY_WebApi.Common.Response;
 using LY_WebApi.Data;
-using LY_WebApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LY_WebApi.Repository

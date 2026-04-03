@@ -1,4 +1,5 @@
-﻿using LY_WebApi.Models;
+﻿
+using LY_Shared.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LY_WebApi.Repository

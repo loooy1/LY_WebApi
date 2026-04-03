@@ -1,8 +1,5 @@
 ﻿global using LY_WebApi.Common; // 全局引用Common文件夹
-using System.Reflection;
-using System.Threading.Channels;
-using Asp.Versioning;
-using Asp.Versioning.ApiExplorer;
+
 using LY_WebApi.Application.MediatR.Register;
 using LY_WebApi.Common.AppsettingConfig;
 using LY_WebApi.Common.SerilogExt;
@@ -15,10 +12,10 @@ using LY_WebApi.Services.Background;
 using LY_WebApi.Services.Background.Interface;
 using LY_WebApi.Services.ExternalService;
 using LY_WebApi.Services.ExternalService.ExternalServiceBase;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Logging;
-using Serilog;
+using LY_Infrastructure; //引入持久化模块
+
+
 
 
 namespace Ly_WebApi
@@ -66,11 +63,6 @@ namespace Ly_WebApi
             //注册版本控制服务
             builder.Services.AddSwaggerExt();
 
-            // 注册AutoMapper服务
-            builder.Services.AddAutoMapper(cfg => {
-                // 这里可以手动添加映射，也可以什么都不写，自动扫描 Profile
-            }, typeof(AutoMapperProfile).Assembly);
-
             // 服务层依赖HttpClient
             builder.Services.AddHttpClient(); 
             #endregion
@@ -113,6 +105,14 @@ namespace Ly_WebApi
             builder.Services.AddHostedService<HotUpdateByIOptionMonitor>();
 
             #endregion
+            #endregion
+
+
+
+            #region 模块注册
+            //基础设施 模块 （包含EFCore和数据库迁移）
+            builder.Services.AddDataServices(builder.Configuration, builder.Environment);
+
             #endregion
 
 

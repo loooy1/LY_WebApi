@@ -1,9 +1,8 @@
 ﻿using LY_WebApi.Common.Response;
-using LY_WebApi.Data;
-using LY_WebApi.Models;
 using LY_WebApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using LY_Shared.Entities;
 
 namespace LY_WebApi.Filter.ActionValidations
 {

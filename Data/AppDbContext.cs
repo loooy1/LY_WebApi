@@ -1,6 +1,6 @@
-﻿using LY_WebApi.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using LY_Shared.Entities;
 
 namespace LY_WebApi.Data
 {

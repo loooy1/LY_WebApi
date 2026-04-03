@@ -1,6 +1,5 @@
-﻿
-using System.ComponentModel.DataAnnotations;
-using LY_WebApi.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using Application.Dtos;
 
 
 /// <summary>

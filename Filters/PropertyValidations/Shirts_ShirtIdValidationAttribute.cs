@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using LY_WebApi.Models;
+using LY_Shared.Entities;
 
 namespace LY_WebApi.Filter.PropertyValidations
 {

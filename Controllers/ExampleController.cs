@@ -1,12 +1,12 @@
 ﻿using Asp.Versioning;
 using LY_WebApi.Filter.ActionValidations;
 using LY_WebApi.Filter.ExceptionFilters;
-using LY_WebApi.Models;
 using LY_WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using LY_WebApi.Filters.ResourceFilter;
 using LY_WebApi.Common.Response;
+using Application.Dtos;
 
 namespace LY_WebApi.Controllers
 {

@@ -546,6 +546,13 @@ todoly:校验器的实现
         - 发布单个文件：将所有内容打包成一个可执行文件，方便部署和分发
         - ReadyToRun：预编译应用程序，减少首次启动时间 但是会增加发布包体积
         - 裁剪未使用的代码：移除未使用的代码和资源，减小发布包体积。 不建议勾选，会影响反射等功能，导致运行时错误
+        
+ 12. 泛型和动态创建实例
+     var obj = Activator.CreateInstance(repositoryType, _dbContext) ?? throw new Exception($"不支持实例化{repositoryType}");
+
+ 13. channel
+     channel是一个线程安全的队列，提供了生产者-消费者模式的实现，可以在不同线程之间安全地传递数据。
+                
 
 
 

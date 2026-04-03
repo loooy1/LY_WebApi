@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using LY_WebApi.Models;
+using LY_Shared.Entities;
+using Application.Dtos;
 
 namespace LY_WebApi.Services
 {
