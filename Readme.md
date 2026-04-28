@@ -562,14 +562,15 @@ todoly:校验器的实现
 1. 尽量使用异步方法
     ```
    用async修饰的方法
-   返回Task(无返回值)或Task<T>(有返回值)
-   使用时await调用，等待异步操作完成
-   调用异步方法的方法也要标记为async，并返回Task或Task<T>
+       返回Task(无返回值)或Task<T>(有返回值)
+       使用时await调用，等待异步操作完成
+       调用异步方法的方法也要标记为async，并返回Task或Task<T>
 
-   async的方法会被编译器转换成状态机，记录执行的状态和上下文。当前线程遇到await之后给操作系统api发完指令之后就返回线程池，等操作系统完成任务后再回来通知.net，然后从线程池调用新线程通过状态机记录的状态继续执行后续逻辑。
-   像读写文件/http请求/数据库操作等是操作系统的工作，.net调用操作系统的API发出指令后就可以继续执行其他代码了，等操作系统完成任务后再回来通知.net继续执行后续逻辑。
-   同步的话，.net线程调用操作系统API发出指令后就一直等着，然后操作系统线程给cpu发完指令之后就不管了。但是.NET线程会一直等待。
-   异步的话，.net线程调用操作系统API发出指令后就可以继续执行其他代码了，等操作系统完成任务后再回来通知.net继续执行后续逻辑，增强了.net线程的使用效率
+   async本质
+       async的方法会被编译器转换成状态机，记录执行的状态和上下文。当前线程遇到await之后给操作系统api发完指令之后就返回线程池，等操作系统完成任务后再回来通知.net，然后从线程池调用新线程通过状态机记录的状态继续执行后续逻辑。
+       像读写文件/http请求/数据库操作等是操作系统的工作，.net调用操作系统的API发出指令后就可以继续执行其他代码了，等操作系统完成任务后再回来通知.net继续执行后续逻辑。
+       同步的话，.net线程调用操作系统API发出指令后就一直等着，然后操作系统线程给cpu发完指令之后就不管了。但是.NET线程会一直等待。
+       异步的话，.net线程调用操作系统API发出指令后就可以继续执行其他代码了，等操作系统完成任务后再回来通知.net继续执行后续逻辑，增强了.net线程的使用效率
 
    异步代码并不会自动创建新线程，没有 Task.Run，没有新线程，异步方法里的代码就是调用线程一路往下跑，直到碰到真正需要调用操作系统异步IO，线程才交还线程池。
    例如 文件读写：File.ReadAllTextAsync
@@ -578,10 +579,163 @@ todoly:校验器的实现
         缓存：Redis.GetAsync
         消息队列：RabbitMQ.ConsumeAsync
         流操作：Stream.ReadAsync
+  
+   async方法的缺点： 
+       异步方法会生成一个状态机的类，效率低；可能会占用更多的线程内存。
+       如果直接是 异步操作的转发，或者没有后续逻辑需要执行，可以直接返回Task或Task<T>，不使用async/await，避免生成状态机类，提高性能。 避免异步包装
+       例如 public Task<string> GetDataAsync() => File.ReadAllTextAsync("data.txt");
+       而不是 public async Task<string> GetDataAsync() => await File.ReadAllTextAsync("data.txt");
+
+   暂停线程
+       用Task.Delay而不是Thread.Sleep，Task.Delay不会阻塞线程，而Thread.Sleep会阻塞线程，导致性能问题
+       task.Delay(1000); 会通知操作系统在1000毫秒后通知.NET继续执行后续逻辑，而Thread.Sleep(1000);会直接阻塞当前线程1000毫秒，期间无法处理其他请求，性能较差。
+
+   取消异步任务 
+       用CancellationToken，提供取消功能，避免不必要的资源消耗
+       例如
+                CancellationTokenSource cts = new CancellationTokenSource();
+                cts.CancelAfter(5000); // 设置5秒后取消
+                await ReadFileAsync("http://www.baidus.com",100, cts.Token);
+
+   Task类的常用方法：
+        WhenAll：等待多个任务全部完成，返回一个新的Task，当所有任务完成时完成。
+        WhenAny：等待多个任务中任意一个完成，返回一个新的Task，当任意一个任务完成时完成。
+        FromResult：创建一个已完成的Task，直接返回结果，不执行异步操作。
+
+   yield
+       yield return：用于生成器方法，允许方法一次返回一个值。然后调用处校验 找到合适的值之后就结束yield return的迭代。节省内存
+       yield break：结束生成器方法的迭代，停止返回值。 方法剩余的代码不再执行。
+       yield方法返回值必须是IEnumerable类型的；调用方使用 foreach或LINQ等方式迭代获取值。
+       成立一个数据然后返回 再处理再返回 直到满足条件结束
 
 
+   Note:
+       1. 接口中定义异步方法时，直接返回Task或Task<T>，不能加async
     ```
-2. ss 
+2. LINQ
+    ```
+    委托
+        委托是方法的类型，指向方法。和赋值变量一样。
+        委托可以指向一个方法，也可以指向多个方法（多播委托）。调用委托时，会依次调用所有指向的方法。
+        委托可以指向静态方法/实例方法/匿名方法。
+        自定义委托：public delegate int MyDelegate(string input); 一个返回值一个参数的委托
+        但是一般不自定义委托了，直接用系统内置的Func和Action就行了
+        Action<T>：定义一个无返回值的委托，接受一个或多个参数，执行一些操作但不返回结果。
+        Func<T, TResult>：定义一个返回值的委托，接受一个或多个参数，返回一个结果。
+
+    匿名方法和lambda表达式
+        匿名方法：没有名称的方法，可以直接赋值给委托变量，使用delegate关键字定义。不能独立存在，必须赋值给委托变量。
+        Lambda表达式：匿名方法的简化语法，使用=>符号定义，左边是参数列表，右边是方法体。也不能独立存在，必须赋值给委托变量。
+        例如：
+            Action<string> print = delegate(string message) { Console.WriteLine(message); };
+            Action<string> printLambda = message => Console.WriteLine(message);
+   
+    自定义linq中的where方法
+         public static IEnumerable<int> MyWhere(IEnumerable<int> ints, Func<int, bool> func)
+        {
+            List<int> ints1 = new List<int>();
+            foreach (var item in ints)
+            {
+                if (func(item))
+                {
+
+                    ints1.Add(item);
+                }
+            }
+            return ints1;
+        
+        }
+        =====================================================================================
+           public static IEnumerable<int> MyWhere2(IEnumerable<int> ints, Func<int, bool> func)
+        {
+            foreach (var item in ints)
+            {
+                if (func(item))
+                {
+
+                    yield return item;
+                }
+            }
+        }
+
+    linq常用方法
+        Where：过滤集合中的元素，返回满足条件的元素集合。
+        Join：连接两个集合，根据指定的键将它们关联起来，返回一个新的集合，其中每个元素是通过将两个集合中的元素进行匹配得到的。
+        Distinct：去除集合中的重复元素，返回一个新的集合，其中只包含唯一的元素。
+        Any：确定集合中是否存在满足条件的元素，返回一个布尔值。
+        All：确定集合中的所有元素是否都满足条件，返回一个布尔值。
+        Count：计算集合中满足条件的元素数量，返回一个整数值。
+
+        //获取一条数据
+        Single/SingleOrDefault：从集合中返回满足条件的唯一元素，如果没有满足条件的元素或有多个满足条件的元素，则抛出异常或返回默认值。
+        First/FirstOrDefault：从集合中返回满足条件的第一个元素，如果没有满足条件的元素，则抛出异常或返回默认值。
+
+        //排序得到一个新集合
+        OrderBy/OrderByDescending：对集合中的元素进行排序，返回一个新的集合，其中元素按照指定的键进行升序或降序排列。
+           var b = list.OrderBy(i => i.Age).ThenBy(i => i.Salary); 先根据年龄排序再根据工资排序，年龄相同的情况下工资高的排前面
+
+        //操作结果集
+        skip/take：跳过集合中的前n个元素或返回集合中的前n个元素，返回一个新的集合。
+
+        //分组得到一个新集合
+        GroupBy：将集合中的元素分组，返回一个新的集合，其中每个元素是一个分组对象，包含一个键和一个元素集合。
+            var result = list.GroupBy(e => e.Age);
+
+            foreach (var group in result)
+            {
+                Console.WriteLine($"Age: {group.Key}");
+                foreach (var employee in group)
+                {
+                    Console.WriteLine(employee);
+                }
+            }
+
+        //投影
+        Select /SelectMany：将集合中的元素投影到一个新的形式，返回一个新的集合.和原来的类型不同了
+        var result = list.GroupBy(e => e.Age).Select(g =>   new { Age = g.Key, MaxS = g.Max(e => e.Salary) });
+
+        //匿名类型
+        var aa = new { Name = "Alice", Age = 30 }; //创建一个匿名类型的对象
+        var result = list.Select(i => new { Name = i.Name, Age = i.Age }); //投影到一个匿名类型的集合
+
+        //转换方法
+        ToList：将集合转换为List<T>类型。
+        ToArray：将集合转换为数组。
+
+        //聚合方法
+        Sum：计算集合中满足条件的元素的总和，返回一个数值。
+        Min：计算集合中满足条件的元素的最小值，返回一个数值。
+        Max：计算集合中满足条件的元素的最大值，返回一个数值。
+        Average：计算集合中满足条件的元素的平均值，返回一个数值。
+        Count：计算集合中满足条件的元素数量，返回一个整数值。
+
+        例子1：
+        从员工列表中：筛选出 ID>2 的员工 → 按年龄分组 → 按年龄升序排序 → 取前 3 个年龄组 → 统计每组的年龄、人数、平均工资 → 打印输出。
+
+        // 创建员工列表
+            List<Employee> list = new List<Employee>();
+
+            // 添加员工数据
+            list.Add(new Employee { Id = 1, Name = "jerry", Age = 28, Gender = true, Salary = 5000 });
+            list.Add(new Employee { Id = 2, Name = "jim", Age = 33, Gender = true, Salary = 3000 });
+            list.Add(new Employee { Id = 3, Name = "lily", Age = 35, Gender = false, Salary = 9000 });
+            list.Add(new Employee { Id = 4, Name = "lucy", Age = 16, Gender = false, Salary = 2000 });
+            list.Add(new Employee { Id = 5, Name = "kimi", Age = 25, Gender = true, Salary = 1000 });
+            list.Add(new Employee { Id = 6, Name = "nancy", Age = 35, Gender = false, Salary = 8000 });
+            list.Add(new Employee { Id = 7, Name = "zack", Age = 35, Gender = true, Salary = 12000 });
+            list.Add(new Employee { Id = 8, Name = "jack", Age = 33, Gender = true, Salary = 8000 });
+
+
+            list.Where(e => e.Id > 2).GroupBy(e => e.Age).OrderBy(e => e.Key).Take(3).Select(e => new { Age=e.Key,People=e.Count(),Avg=e.Average(e=>e.Salary)}).ToList().ForEach(e=> Console.WriteLine($"Age:{e.Age},People:{e.People},Avg:{e.Avg}"));
+
+        例子2：
+        统计这个字符串中每个字母出现的频率(忽略大小写)，然后按照从高到低的顺序输出出现频率高于2次的字母和其出现的频率
+        
+        string content = "Hello World! Abc 123, Test@Sys.";
+
+        content.Where(e=>char.IsLetter(e)).Select(e=>char.ToLower(e)).GroupBy(e=>e).Select(e=>new {Char=e.Key,Count=e.Count() }).OrderByDescending(e => e.Count).Where(e => e.Count > 2).ToList().ForEach(e => Console.WriteLine($"Char: {e.Char}, Count: {e.Count}"));
+
+2. 
     ```
 
 
