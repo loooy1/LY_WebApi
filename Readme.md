@@ -735,8 +735,17 @@ todoly:校验器的实现
 
         content.Where(e=>char.IsLetter(e)).Select(e=>char.ToLower(e)).GroupBy(e=>e).Select(e=>new {Char=e.Key,Count=e.Count() }).OrderByDescending(e => e.Count).Where(e => e.Count > 2).ToList().ForEach(e => Console.WriteLine($"Char: {e.Char}, Count: {e.Count}"));
 
-2. 
+3. 依赖注入
     ```
+    控制反转=>一种设计原则，指将对象的创建和依赖关系的管理交给外部容器，而不是由对象自己负责。
+    依赖注入=>一种实现方式
+    
+    生命周期 
+    singleton：整个应用程序生命周期内只创建一个实例，所有请求都共享这个实例。适用于无状态服务或需要共享状态的服务。
+    transient：每次请求都创建一个新的实例，不共享实例。适用于轻量级、无状态的服务。
+    scoped：每个请求创建一个实例，同一请求内共享实例，不同请求之间不共享。适用于需要在请求范围内维护状态的服务。
+
+    如果一个类实现了IDisposable接口，在using块中创建该类的实例，using块结束时会自动调用Dispose方法，释放资源。
 
 
 
